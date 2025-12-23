@@ -1,0 +1,515 @@
+\documentclass[11pt,a4paper]{article}
+
+% Essential packages
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{algorithm,algorithmic}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% Theorem environments
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{remark}{Remark}
+
+% Custom commands
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\text{Var}}
+\newcommand{\Prob}{\mathbb{P}}
+
+% Header formatting
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\thepage}
+\lhead{D. M., Multi-Period Capital Allocation}
+\chead{}
+\rfoot{\textit{Draft - Do Not Distribute}}
+
+\title{\textbf{Multi-Period Capital Allocation Under Uncertainty}\\
+\large A Mixed-Integer Stochastic Programming Formulation\\
+\vspace{0.5cm}
+\normalsize Capital Allocation Framework v1.0}
+\author{Muting (Don) Ma, Ph.D.}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We present a mixed-integer stochastic programming formulation for optimal time and resource allocation over a 30-day planning horizon. The model incorporates uncertainty in emotional recovery requirements, tracks progress on critical tasks (immigration documentation), and provides daily decision support while maintaining computational tractability. The formulation ensures feasibility through careful constraint design and provides a rolling horizon framework for continuous re-optimization.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+\subsection{Problem Context}
+This formulation addresses the multi-period resource allocation problem for a researcher managing competing priorities: immigration documentation, job search, research obligations, and personal well-being. The key innovation is treating time allocation as a capital budgeting problem under uncertainty.
+
+\subsection{Model Philosophy}
+The model operates on three key principles:
+\begin{enumerate}
+    \item \textbf{Rolling Horizon}: Optimize for 30 days, implement today's decisions
+    \item \textbf{State Tracking}: Immigration progress affects future allocations
+    \item \textbf{Stochastic Recovery}: Emotional exhaustion requires uncertain recovery time
+\end{enumerate}
+
+\section{Sets and Indices}
+
+\begin{definition}[Time Periods]
+Let $\mathcal{T} = \{1, 2, \ldots, T\}$ denote the set of days in the planning horizon, where $T = 30$.
+\end{definition}
+
+\begin{definition}[Task Categories]
+Let $\mathcal{I}$ denote the set of task categories:
+\begin{align}
+\mathcal{I} = \{&\text{GC}, \text{JOB}, \text{SCH}, \text{REST}, \text{RES}, \text{SOC}, \text{EX}\}
+\end{align}
+where:
+\begin{itemize}
+    \item GC: Green card preparation
+    \item JOB: Job searching activities
+    \item SCH: School/teaching obligations
+    \item REST: Rest and recovery
+    \item RES: PhD research
+    \item SOC: Social activities
+    \item EX: Exercise
+\end{itemize}
+\end{definition}
+
+\begin{definition}[Uncertainty Scenarios]
+Let $\mathcal{S}$ denote the set of emotional recovery scenarios with associated probabilities $p_s$ for $s \in \mathcal{S}$.
+\end{definition}
+
+\section{Parameters}
+
+\subsection{Resource Parameters}
+
+\begin{table}[h]
+\centering
+\caption{Daily Resource Budgets}
+\begin{tabular}{lll}
+\toprule
+Parameter & Description & Value \\
+\midrule
+$H^{\max}$ & Maximum usable hours per day & 16 \\
+$E^{\max}$ & Maximum energy units per day & 100 \\
+$M^{\max}$ & Maximum emotional capacity & 100 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Task Parameters}
+
+For each task $i \in \mathcal{I}$ and day $t \in \mathcal{T}$:
+
+\begin{align}
+e_i &: \text{Energy consumption rate (units/hour)} \\
+m_i &: \text{Emotional cost rate (units/hour)} \\
+h_i^{\min} &: \text{Minimum hours if undertaken} \\
+h_i^{\max} &: \text{Maximum hours per day}
+\end{align}
+
+\subsection{Return Parameters}
+
+Each task $i$ generates returns in four dimensions:
+\begin{align}
+\alpha_i^I &: \text{Immigration progress per hour} \\
+\alpha_i^Y &: \text{Income/employability gain per hour} \\
+\alpha_i^K &: \text{Long-term capital accumulation per hour} \\
+\alpha_i^O &: \text{Optionality improvement per hour}
+\end{align}
+
+\subsection{State-Dependent Parameters}
+
+\begin{align}
+G^{\text{total}} &: \text{Total green card work required (hours)} \\
+\gamma &: \text{Decay rate for uncompleted GC work stress} \\
+\beta_s &: \text{Recovery hours needed in scenario } s \in \mathcal{S}
+\end{align}
+
+\section{Decision Variables}
+
+\subsection{Primary Decision Variables}
+
+For each task $i \in \mathcal{I}$ and day $t \in \mathcal{T}$:
+\begin{align}
+x_{it} \in \{0,1\} :& \text{Binary decision to undertake task } i \text{ on day } t \\
+h_{it} \in \R_+ :& \text{Hours allocated to task } i \text{ on day } t
+\end{align}
+
+\subsection{State Variables}
+
+\begin{align}
+g_t \in [0,1] :& \text{Proportion of green card work completed by end of day } t \\
+G_t \in \R_+ :& \text{Cumulative GC hours completed by end of day } t \\
+\sigma_t \in [0,1] :& \text{Immigration security level on day } t
+\end{align}
+
+\subsection{Auxiliary Variables}
+
+For scenario-dependent constraints:
+\begin{align}
+r_{ts} \in \R_+ :& \text{Recovery hours needed on day } t \text{ in scenario } s \\
+z_{ts} \in \{0,1\} :& \text{Indicator for high emotional load on day } t \text{ in scenario } s
+\end{align}
+
+\section{Objective Function}
+
+The objective maximizes expected utility over the planning horizon:
+
+\begin{align}
+\max \quad & \E_s \left[ \sum_{t=1}^T \delta^t \left( \sum_{i \in \mathcal{I}} U_{it}(h_{it}, g_t) \right) \right]
+\end{align}
+
+where the utility function is:
+\begin{align}
+U_{it}(h_{it}, g_t) = &\; w_I(t, g_t) \cdot \alpha_i^I \cdot h_{it} \\
+&+ w_Y(t) \cdot \alpha_i^Y \cdot h_{it} \\
+&+ w_K(t) \cdot \alpha_i^K \cdot h_{it} \\
+&+ w_O(t) \cdot \alpha_i^O \cdot h_{it} \\
+&- \lambda_1 \cdot e_i \cdot h_{it} \\
+&- \lambda_2(g_t) \cdot m_i \cdot h_{it}
+\end{align}
+
+\subsection{Weight Dynamics}
+
+The weights evolve based on state and time:
+\begin{align}
+w_I(t, g_t) &= w_I^0 \cdot (1 - g_t) \cdot \exp(-\rho_I t/T) \\
+w_Y(t) &= w_Y^0 \cdot (1 + \rho_Y t/T) \\
+w_K(t) &= w_K^0 \cdot (1 + \rho_K t/T) \\
+w_O(t) &= w_O^0 \cdot (1 + \rho_O t/T) \\
+\lambda_2(g_t) &= \lambda_2^0 \cdot (1 + \gamma(1 - g_t))
+\end{align}
+
+\section{Constraints}
+
+\subsection{Time Constraints}
+
+\begin{align}
+\sum_{i \in \mathcal{I}} h_{it} + r_{ts} &\leq H^{\max} \quad \forall t \in \mathcal{T}, s \in \mathcal{S} \label{eq:time}
+\end{align}
+
+\subsection{Logical Constraints}
+
+\begin{align}
+h_{it} &\geq h_i^{\min} \cdot x_{it} \quad \forall i \in \mathcal{I}, t \in \mathcal{T} \label{eq:min_hours}\\
+h_{it} &\leq h_i^{\max} \cdot x_{it} \quad \forall i \in \mathcal{I}, t \in \mathcal{T} \label{eq:max_hours}
+\end{align}
+
+\subsection{Energy Constraints}
+
+\begin{align}
+\sum_{i \in \mathcal{I}} e_i \cdot h_{it} &\leq E^{\max} \cdot (1 + 0.2 \cdot \sigma_t) \quad \forall t \in \mathcal{T} \label{eq:energy}
+\end{align}
+
+\subsection{Emotional Load Constraints}
+
+\begin{align}
+\sum_{i \in \mathcal{I}} m_i \cdot h_{it} &\leq M^{\max} \cdot (1 + 0.3 \cdot \sigma_t) \quad \forall t \in \mathcal{T} \label{eq:emotional}
+\end{align}
+
+\subsection{Recovery Stochastic Constraints}
+
+Emotional exhaustion indicator:
+\begin{align}
+\sum_{i \in \mathcal{I}} m_i \cdot h_{it} &\geq 0.8 \cdot M^{\max} - M^{\text{big}} \cdot (1 - z_{ts}) \quad \forall t, s \label{eq:exhaust_indicator}
+\end{align}
+
+Recovery requirement:
+\begin{align}
+r_{ts} &\geq \beta_s \cdot z_{ts} \quad \forall t \in \mathcal{T}, s \in \mathcal{S} \label{eq:recovery}\\
+r_{ts} &\leq 4 \quad \forall t \in \mathcal{T}, s \in \mathcal{S} \label{eq:recovery_max}
+\end{align}
+
+where $\beta_s \in \{1, 2, 3, 4\}$ with probabilities $p_s = \{0.4, 0.3, 0.2, 0.1\}$.
+
+\subsection{State Evolution Constraints}
+
+Green card progress tracking:
+\begin{align}
+G_t &= G_{t-1} + h_{\text{GC},t} \quad \forall t \in \mathcal{T} \label{eq:gc_cumulative}\\
+g_t &= \min\left(1, \frac{G_t}{G^{\text{total}}}\right) \quad \forall t \in \mathcal{T} \label{eq:gc_proportion}\\
+G_0 &= G^{\text{initial}} \label{eq:gc_initial}
+\end{align}
+
+Immigration security evolution:
+\begin{align}
+\sigma_t &= \min(1, g_t + 0.2 \cdot \mathbb{I}[g_t > 0.5]) \quad \forall t \in \mathcal{T} \label{eq:security}
+\end{align}
+
+\subsection{Minimum Requirements}
+
+Critical task minimums:
+\begin{align}
+\sum_{t=1}^7 h_{\text{GC},t} &\geq 10 \quad \text{(Weekly GC minimum)} \label{eq:gc_weekly}\\
+\sum_{t=1}^7 h_{\text{SCH},t} &\geq 20 \quad \text{(Weekly school obligations)} \label{eq:school_weekly}\\
+h_{\text{REST},t} &\geq 1 \quad \forall t \in \mathcal{T} \label{eq:rest_daily}
+\end{align}
+
+\subsection{Non-anticipativity Constraints}
+
+For the rolling horizon implementation:
+\begin{align}
+h_{i,1} &= \hat{h}_{i,1} \quad \text{(Implement today's decision)} \label{eq:implement}
+\end{align}
+
+\section{Solution Algorithm}
+
+\subsection{Rolling Horizon Procedure}
+
+\begin{algorithm}
+\caption{Rolling Horizon Implementation}
+\begin{algorithmic}[1]
+\STATE Initialize $G_0 \leftarrow$ current GC completion
+\FOR{each decision day $d$}
+    \STATE Update parameters based on completed work
+    \STATE Solve optimization model for days $[d, d+29]$
+    \STATE Extract first-day decisions $\{h_{i,1}^*\}_{i \in \mathcal{I}}$
+    \STATE Implement decisions for day $d$
+    \STATE Observe actual recovery requirement
+    \STATE Update $G_0 \leftarrow G_0 + h_{\text{GC},1}^*$
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Scenario Reduction}
+
+To maintain tractability, we use:
+\begin{itemize}
+    \item Sample Average Approximation (SAA) with $|\mathcal{S}| = 4$ scenarios
+    \item Probability-weighted expected value formulation
+    \item Warm-start from previous day's solution
+\end{itemize}
+
+\section{Model Properties}
+
+\subsection{Feasibility Analysis}
+
+\begin{proposition}[Feasibility Conditions]
+The model is feasible if and only if:
+\begin{align}
+\sum_{i \in \mathcal{I}} h_i^{\min} + \max_s \beta_s \leq H^{\max}
+\end{align}
+\end{proposition}
+
+\begin{proof}
+The binding constraints are time availability and minimum task requirements. In the worst case, all minimum hours must be satisfied while accommodating maximum recovery.
+\end{proof}
+
+\subsection{Computational Complexity}
+
+\begin{theorem}[Problem Class]
+The formulation is a Mixed-Integer Linear Program (MILP) with:
+\begin{itemize}
+    \item Binary variables: $O(|\mathcal{I}| \cdot T \cdot |\mathcal{S}|)$
+    \item Continuous variables: $O(|\mathcal{I}| \cdot T \cdot |\mathcal{S}|)$
+    \item Constraints: $O(|\mathcal{I}| \cdot T \cdot |\mathcal{S}|)$
+\end{itemize}
+\end{theorem}
+
+For typical parameters ($|\mathcal{I}| = 7$, $T = 30$, $|\mathcal{S}| = 4$), this yields approximately:
+\begin{itemize}
+    \item 840 binary variables
+    \item 840 continuous variables
+    \item 1,680 constraints
+\end{itemize}
+
+This is well within the capability of modern MILP solvers (Gurobi, CPLEX).
+
+\section{Implementation Considerations}
+
+\subsection{Parameter Estimation}
+
+\begin{table}[h]
+\centering
+\caption{Recommended Parameter Values}
+\begin{tabular}{lcccc}
+\toprule
+Task & Energy/hr & Emotion/hr & Min hrs & Max hrs \\
+\midrule
+GC & 15 & 12 & 1 & 6 \\
+JOB & 12 & 10 & 1 & 4 \\
+SCH & 10 & 5 & 2 & 8 \\
+REST & 0 & -5 & 1 & 4 \\
+RES & 12 & 8 & 1 & 6 \\
+SOC & 5 & -3 & 0 & 3 \\
+EX & 8 & -4 & 0 & 2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Gurobi Implementation}
+
+Key solver settings:
+\begin{itemize}
+    \item MIPGap: 0.01 (1\% optimality gap)
+    \item TimeLimit: 60 seconds
+    \item Threads: 4
+    \item MIPFocus: 1 (emphasize feasibility)
+\end{itemize}
+
+\subsection{Sensitivity Analysis}
+
+Critical parameters for calibration:
+\begin{enumerate}
+    \item $\gamma$: Stress from incomplete GC work
+    \item $\lambda_1, \lambda_2$: Energy and emotional cost weights
+    \item $w_I^0$: Initial immigration priority weight
+    \item Recovery probabilities $p_s$
+\end{enumerate}
+
+\section{Model Extensions}
+
+\subsection{Adaptive Learning}
+
+Incorporate Bayesian updating of recovery probabilities:
+\begin{align}
+p_s^{(t+1)} = \frac{p_s^{(t)} \cdot \mathcal{L}(data_t | \beta_s)}{\sum_{s'} p_{s'}^{(t)} \cdot \mathcal{L}(data_t | \beta_{s'})}
+\end{align}
+
+\subsection{Multi-Stage Stochastic Programming}
+
+Extend to multi-stage with recourse decisions:
+\begin{itemize}
+    \item Stage 1: Morning allocation decisions
+    \item Observation: Actual energy levels
+    \item Stage 2: Afternoon reallocation
+\end{itemize}
+
+\subsection{Risk Measures}
+
+Replace expectation with CVaR for risk-averse planning:
+\begin{align}
+\max \quad \text{CVaR}_\alpha \left[ \sum_{t=1}^T \delta^t U_t \right]
+\end{align}
+
+\section{Validation and Testing}
+
+\subsection{Feasibility Checks}
+
+Before solving, verify:
+\begin{enumerate}
+    \item $\sum_i h_i^{\min} \leq H^{\max} - 4$ (accommodate max recovery)
+    \item $\sum_i e_i \cdot h_i^{\min} \leq E^{\max}$
+    \item Weekly minimums achievable within 7-day windows
+\end{enumerate}
+
+\subsection{Solution Quality Metrics}
+
+Post-optimization validation:
+\begin{itemize}
+    \item Green card completion trajectory
+    \item Daily energy utilization rate
+    \item Emotional load variance
+    \item Weekly pattern stability
+\end{itemize}
+
+\section{Conclusions}
+
+This formulation provides a rigorous mathematical framework for multi-period resource allocation under uncertainty. The model balances immediate priorities (immigration) with long-term objectives while maintaining computational tractability. The rolling horizon approach enables daily re-optimization based on updated state information.
+
+\subsection{Key Features}
+\begin{itemize}
+    \item Explicitly models uncertainty in recovery requirements
+    \item Tracks immigration progress as state variable
+    \item Balances four return dimensions with resource costs
+    \item Provides implementable daily decisions
+    \item Maintains feasibility through careful constraint design
+\end{itemize}
+
+\subsection{Implementation Checklist}
+\begin{enumerate}
+    \item Set initial GC completion percentage
+    \item Calibrate energy and emotional cost parameters
+    \item Configure Gurobi solver settings
+    \item Run optimization for 30-day horizon
+    \item Extract and implement Day 1 decisions
+    \item Update state and re-optimize tomorrow
+\end{enumerate}
+
+\appendix
+
+\section{Notation Summary}
+
+\begin{table}[h]
+\centering
+\caption{Complete Notation Reference}
+\begin{tabular}{ll}
+\toprule
+Symbol & Description \\
+\midrule
+\multicolumn{2}{l}{\textit{Sets}} \\
+$\mathcal{T}$ & Planning horizon days \\
+$\mathcal{I}$ & Task categories \\
+$\mathcal{S}$ & Recovery scenarios \\
+\midrule
+\multicolumn{2}{l}{\textit{Variables}} \\
+$x_{it}$ & Binary task selection \\
+$h_{it}$ & Hours allocated \\
+$g_t$ & GC completion proportion \\
+$\sigma_t$ & Immigration security level \\
+$r_{ts}$ & Recovery hours \\
+\midrule
+\multicolumn{2}{l}{\textit{Parameters}} \\
+$H^{\max}$ & Daily hour budget \\
+$E^{\max}$ & Daily energy budget \\
+$M^{\max}$ & Daily emotional budget \\
+$e_i$ & Energy cost rate \\
+$m_i$ & Emotional cost rate \\
+$\alpha_i^j$ & Return rate in dimension $j$ \\
+$w_j(t)$ & Time-varying weights \\
+$\beta_s$ & Recovery hours in scenario $s$ \\
+$p_s$ & Scenario probability \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Parameter Configuration File}
+
+Example JSON configuration for Gurobi implementation:
+
+\begin{verbatim}
+{
+  "horizon": 30,
+  "tasks": {
+    "GC": {"energy": 15, "emotion": 12, "min": 1, "max": 6,
+           "returns": {"I": 1.0, "Y": 0.1, "K": 0.2, "O": 0.1}},
+    "JOB": {"energy": 12, "emotion": 10, "min": 1, "max": 4,
+            "returns": {"I": 0.0, "Y": 1.0, "K": 0.3, "O": 0.4}},
+    ...
+  },
+  "scenarios": {
+    "recovery_hours": [1, 2, 3, 4],
+    "probabilities": [0.4, 0.3, 0.2, 0.1]
+  },
+  "initial_state": {
+    "gc_completed": 0.3,
+    "total_gc_hours": 100
+  },
+  "weights": {
+    "immigration": 10.0,
+    "income": 5.0,
+    "capital": 3.0,
+    "optionality": 2.0,
+    "energy_cost": 0.1,
+    "emotion_cost": 0.15
+  }
+}
+\end{verbatim}
+
+\end{document}
