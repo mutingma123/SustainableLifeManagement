@@ -2,6 +2,7 @@
 
 A mixed-integer stochastic programming framework for optimal multi-period resource allocation under uncertainty.
 
+[![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.18039751-green)](https://doi.org/10.5281/zenodo.18039751)
 [![DOI](https://img.shields.io/badge/DOI-10.2139/ssrn.5369435-blue)](https://dx.doi.org/10.2139/ssrn.5369435)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -192,8 +193,8 @@ If you use this framework in your research, please cite:
   title={Multi-Period Capital Allocation Under Uncertainty: A Mixed-Integer Stochastic Programming Formulation},
   author={Ma, Muting (Don)},
   year={2025},
-  doi={10.2139/ssrn.5369435},
-  url={https://dx.doi.org/10.2139/ssrn.5369435}
+  doi={10.5281/zenodo.18039751},
+  url={https://doi.org/10.5281/zenodo.18039751}
 }
 ```
 
@@ -201,7 +202,7 @@ If you use this framework in your research, please cite:
 
 For detailed mathematical formulation, see:
 - [Formulation Document](Formulation/Formulation.tex) - Complete mathematical specification
-- [SSRN Paper](https://dx.doi.org/10.2139/ssrn.5369435) - Published version
+- [Zenodo Paper](https://doi.org/10.5281/zenodo.18039751) - Published version
 
 ## License
 
