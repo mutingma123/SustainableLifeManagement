@@ -1,0 +1,14 @@
+2025-12-23 15:26:01,049 - INFO - Starting SLM Optimization
+2025-12-23 15:26:01,049 - INFO - Getting user inputs
+2025-12-23 15:26:22,478 - INFO - Set parameter WLSAccessID
+2025-12-23 15:26:22,478 - INFO - Set parameter WLSSecret
+2025-12-23 15:26:22,478 - INFO - Set parameter LicenseID to value 2680183
+2025-12-23 15:26:22,973 - INFO - Academic license 2680183 - for non-commercial use only - registered to mm___@ua.edu
+2025-12-23 15:26:22,982 - INFO - Set parameter TimeLimit to value 60
+2025-12-23 15:26:22,982 - INFO - Set parameter MIPGap to value 0.01
+2025-12-23 15:26:22,982 - INFO - Set parameter Threads to value 4
+2025-12-23 15:26:23,009 - INFO - Model built successfully
+2025-12-23 15:26:23,010 - INFO - Starting optimization
+2025-12-23 15:26:23,040 - INFO - Optimal solution found. Objective: 686.99
+2025-12-23 15:26:23,040 - INFO - Daily plan written to /home/mma10/Documents/SLM/output/daily_plan_20251223_152623.csv
+2025-12-23 15:26:23,040 - INFO - Optimization complete
