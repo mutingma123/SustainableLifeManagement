@@ -1,0 +1,104 @@
+[
+  {
+    "Scenario": "baseline",
+    "Description": "Baseline: 30% initial completion",
+    "InitialCompletion": 0.3,
+    "TotalHoursRequired": 100,
+    "Horizon": 30,
+    "ObjectiveValue": 480.632,
+    "DayOnePlan": {
+      "Task1": 6.0,
+      "Task2": 1.33
+    },
+    "WeeklyAggregate": {
+      "Task1": 31.35,
+      "Task2": 22.66
+    }
+  },
+  {
+    "Scenario": "early_stage",
+    "Description": "Early stage: 10% initial completion",
+    "InitialCompletion": 0.1,
+    "TotalHoursRequired": 100,
+    "Horizon": 30,
+    "ObjectiveValue": 622.517,
+    "DayOnePlan": {
+      "Task1": 6.0,
+      "Task2": 1.0
+    },
+    "WeeklyAggregate": {
+      "Task1": 42.0,
+      "Task2": 7.0
+    }
+  },
+  {
+    "Scenario": "mid_stage",
+    "Description": "Mid stage: 50% initial completion",
+    "InitialCompletion": 0.5,
+    "TotalHoursRequired": 100,
+    "Horizon": 30,
+    "ObjectiveValue": 448.7204,
+    "DayOnePlan": {
+      "Task2": 4.0,
+      "Task3": 4.7,
+      "Task6": 3.0
+    },
+    "WeeklyAggregate": {
+      "Task2": 28.0,
+      "Task3": 18.8,
+      "Task6": 19.2,
+      "Task1": 9.99
+    }
+  },
+  {
+    "Scenario": "late_stage",
+    "Description": "Late stage: 80% initial completion",
+    "InitialCompletion": 0.8,
+    "TotalHoursRequired": 100,
+    "Horizon": 30,
+    "ObjectiveValue": 449.3914,
+    "DayOnePlan": {
+      "Task2": 4.0,
+      "Task3": 5.7,
+      "Task6": 3.0
+    },
+    "WeeklyAggregate": {
+      "Task2": 28.0,
+      "Task3": 27.0,
+      "Task6": 16.8,
+      "Task1": 10.0
+    }
+  },
+  {
+    "Scenario": "high_workload",
+    "Description": "High workload: 150 hours total required",
+    "InitialCompletion": 0.3,
+    "TotalHoursRequired": 150,
+    "Horizon": 30,
+    "ObjectiveValue": 480.632,
+    "DayOnePlan": {
+      "Task1": 6.0,
+      "Task2": 1.33
+    },
+    "WeeklyAggregate": {
+      "Task1": 31.35,
+      "Task2": 22.66
+    }
+  },
+  {
+    "Scenario": "short_horizon",
+    "Description": "Short planning: 14-day horizon",
+    "InitialCompletion": 0.3,
+    "TotalHoursRequired": 100,
+    "Horizon": 14,
+    "ObjectiveValue": 477.9429,
+    "DayOnePlan": {
+      "Task1": 6.0,
+      "Task2": 1.33
+    },
+    "WeeklyAggregate": {
+      "Task1": 29.22,
+      "Task2": 25.33
+    }
+  }
+]

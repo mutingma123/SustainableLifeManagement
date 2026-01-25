@@ -1,0 +1,49 @@
+2026-01-25 10:24:20,780 - INFO - Starting experiment suite
+2026-01-25 10:24:20,780 - INFO - Running scenario: baseline
+2026-01-25 10:24:20,792 - INFO - Set parameter WLSAccessID
+2026-01-25 10:24:20,792 - INFO - Set parameter WLSSecret
+2026-01-25 10:24:20,792 - INFO - Set parameter LicenseID to value 2680183
+2026-01-25 10:24:21,071 - INFO - Academic license 2680183 - for non-commercial use only - registered to mm___@ua.edu
+2026-01-25 10:24:21,083 - INFO - Set parameter TimeLimit to value 60
+2026-01-25 10:24:21,083 - INFO - Set parameter MIPGap to value 0.01
+2026-01-25 10:24:21,083 - INFO - Set parameter Threads to value 4
+2026-01-25 10:24:21,119 - INFO - Model built successfully
+2026-01-25 10:24:21,119 - INFO - Starting optimization
+2026-01-25 10:24:21,166 - INFO - Optimal solution found. Objective: 480.63
+2026-01-25 10:24:21,166 - INFO - Running scenario: early_stage
+2026-01-25 10:24:21,166 - INFO - Set parameter TimeLimit to value 60
+2026-01-25 10:24:21,166 - INFO - Set parameter MIPGap to value 0.01
+2026-01-25 10:24:21,167 - INFO - Set parameter Threads to value 4
+2026-01-25 10:24:21,190 - INFO - Model built successfully
+2026-01-25 10:24:21,190 - INFO - Starting optimization
+2026-01-25 10:24:21,203 - INFO - Optimal solution found. Objective: 622.52
+2026-01-25 10:24:21,204 - INFO - Running scenario: mid_stage
+2026-01-25 10:24:21,204 - INFO - Set parameter TimeLimit to value 60
+2026-01-25 10:24:21,204 - INFO - Set parameter MIPGap to value 0.01
+2026-01-25 10:24:21,204 - INFO - Set parameter Threads to value 4
+2026-01-25 10:24:21,236 - INFO - Model built successfully
+2026-01-25 10:24:21,237 - INFO - Starting optimization
+2026-01-25 10:24:21,259 - INFO - Optimal solution found. Objective: 448.72
+2026-01-25 10:24:21,260 - INFO - Running scenario: late_stage
+2026-01-25 10:24:21,260 - INFO - Set parameter TimeLimit to value 60
+2026-01-25 10:24:21,260 - INFO - Set parameter MIPGap to value 0.01
+2026-01-25 10:24:21,260 - INFO - Set parameter Threads to value 4
+2026-01-25 10:24:21,285 - INFO - Model built successfully
+2026-01-25 10:24:21,285 - INFO - Starting optimization
+2026-01-25 10:24:21,297 - INFO - Optimal solution found. Objective: 449.39
+2026-01-25 10:24:21,298 - INFO - Running scenario: high_workload
+2026-01-25 10:24:21,298 - INFO - Set parameter TimeLimit to value 60
+2026-01-25 10:24:21,299 - INFO - Set parameter MIPGap to value 0.01
+2026-01-25 10:24:21,299 - INFO - Set parameter Threads to value 4
+2026-01-25 10:24:21,317 - INFO - Model built successfully
+2026-01-25 10:24:21,317 - INFO - Starting optimization
+2026-01-25 10:24:21,324 - INFO - Optimal solution found. Objective: 480.63
+2026-01-25 10:24:21,325 - INFO - Running scenario: short_horizon
+2026-01-25 10:24:21,325 - INFO - Set parameter TimeLimit to value 60
+2026-01-25 10:24:21,325 - INFO - Set parameter MIPGap to value 0.01
+2026-01-25 10:24:21,325 - INFO - Set parameter Threads to value 4
+2026-01-25 10:24:21,341 - INFO - Model built successfully
+2026-01-25 10:24:21,341 - INFO - Starting optimization
+2026-01-25 10:24:21,349 - INFO - Optimal solution found. Objective: 477.94
+2026-01-25 10:24:21,351 - INFO - Results saved to /home/donma/Documents/SLM/output/experiments/results_20260125_102421.json
+2026-01-25 10:24:21,351 - INFO - All experiments complete
