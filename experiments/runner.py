@@ -1,6 +1,7 @@
 import sys
+import os
 
-sys.path.insert(0, "/home/donma/Documents/SLM")
+sys.path.insert(0, os.path.expandvars("$HOME/Documents/SLM"))
 
 from experiments.scenarios import SCENARIOS
 from experiments.executor import ExperimentExecutor

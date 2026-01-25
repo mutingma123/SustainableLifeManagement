@@ -4,7 +4,7 @@ A mixed-integer stochastic programming framework for optimal multi-period resour
 
 [![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.18039750-green)](https://doi.org/10.5281/zenodo.18039750)
 [![DOI](https://img.shields.io/badge/DOI-10.2139/ssrn.5369435-blue)](https://dx.doi.org/10.2139/ssrn.5369435)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: apache-2.0](https://img.shields.io/badge/License-apache--2.0-blue.svg)](LICENSE)
 
 ## Overview
 
@@ -206,7 +206,7 @@ For detailed mathematical formulation, see:
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
 ## Author
 
