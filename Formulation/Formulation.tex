@@ -1,21 +1,39 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[preprint,review,11pt]{elsarticle}
 
-% Essential packages
-\usepackage[margin=1in]{geometry}
-\usepackage{amsmath,amssymb,amsthm}
+%% Use the options 1p,twocolumn; 3p; 3p,twocolumn; 5p; or 5p,twocolumn
+%% for a journal layout:
+%% \documentclass[final,1p,times]{elsarticle}
+%% \documentclass[final,1p,times,twocolumn]{elsarticle}
+%% \documentclass[final,3p,times]{elsarticle}
+%% \documentclass[final,3p,times,twocolumn]{elsarticle}
+%% \documentclass[final,5p,times]{elsarticle}
+%% \documentclass[final,5p,times,twocolumn]{elsarticle}
+
+%% INFORMS journal style fonts (Times-based using newtx)
+\usepackage{newtxtext}  % Times-like text font
+
+%% Essential packages
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{xcolor}
 \usepackage{hyperref}
+\usepackage{xurl}  % Allow URL line breaks at any character
 \usepackage{graphicx}
-\usepackage{caption}
-\usepackage{natbib}
-\usepackage{setspace}
 \usepackage{algorithm}
 \usepackage{algorithmic}
+\usepackage[margin=1in]{geometry}  % Narrow margins
+\usepackage{setspace}
+\singlespacing  % Single line spacing
 
-% Double spacing for journal submission
-\doublespacing
+%% The lineno package adds line numbers. Start line numbering with
+%% \begin{linenumbers}, end it with \end{linenumbers}. Or switch it on
+%% for the whole article with \linenumbers.
+\usepackage{lineno}
+
+\journal{Operations Research}
 
 % Theorem environments
 \newtheorem{definition}{Definition}
@@ -32,47 +50,104 @@
 \newcommand{\Var}{\text{Var}}
 \newcommand{\Prob}{\mathbb{P}}
 
-\title{\textbf{State-Dependent Resource Allocation Under Uncertainty: A Mixed-Integer Stochastic Programming Approach}}
-\author{
-Anonymous for Review
-}
-\date{}
-
 \begin{document}
 
-\maketitle
+\begin{frontmatter}
+
+\title{State-Dependent Resource Allocation Under Uncertainty: A Mixed-Integer Stochastic Programming Approach}
+
+%% use optional labels to link authors explicitly to addresses:
+%% \author[label1,label2]{}
+
+\author{Anonymous for Review}
+
+%% \affiliation{organization={},%Department and Organization
+%%             addressline={}, 
+%%             city={},
+%%             postcode={}, 
+%%             state={},
+%%             country={}}
 
 \begin{abstract}
 This paper develops a mixed-integer stochastic programming formulation for multi-period resource allocation under uncertainty. The proposed model addresses the fundamental challenge of optimally allocating limited time and cognitive resources across competing task categories when system state evolves dynamically and recovery requirements are uncertain. We demonstrate that optimal allocation strategies exhibit strong state-dependency, with the correlation between initial completion state and priority task allocation reaching $r = -0.91$. Computational experiments across six scenarios reveal that early-stage decisions have outsized importance, with sensitivity coefficients of $\partial z^*/\partial g_0 = -709$ at low completion states diminishing to near-zero at higher completion levels. The model achieves optimal solutions within 60 seconds using commercial MILP solvers, making it suitable for practical decision support applications. These findings contribute to the operations research literature on resource allocation and provide actionable insights for personal productivity management systems.
 \end{abstract}
 
-\noindent\textbf{Keywords:} Resource Allocation; Mixed-Integer Programming; Stochastic Optimization; Decision Support Systems; Rolling Horizon Planning
+\begin{keyword}
+Resource Allocation \sep Mixed-Integer Programming \sep Stochastic Optimization \sep Decision Support Systems \sep Rolling Horizon Planning
+\end{keyword}
 
-\newpage
+\end{frontmatter}
+
+%% Uncomment to enable line numbers
+%% \linenumbers
 
 \section{Introduction}
 
-The efficient allocation of limited resources across competing activities represents a fundamental challenge in operations research and management science. This problem becomes particularly complex when decision-makers must balance immediate priorities against long-term objectives while operating under uncertainty regarding future resource requirements. % [CITE: Classical resource allocation literature]
+The efficient allocation of limited resources across competing activities represents a fundamental challenge in operations research and management science. As the modern workplace increasingly demands that individuals manage multiple professional and personal obligations under cognitive and temporal constraints, sustainable life management has emerged as an urgent research priority. Recent evidence suggests that billions of working days are lost annually due to mental health issues stemming from cognitive overload and excessive job demands \citep{Robinson2024}. The prevalence of burnout continues to rise across sectors, with physicians spending over five hours daily on electronic health record systems and additional time after work hours, contributing to physician attrition and appointment delays \citep{celik_frontiers_2024}. These trends underscore the critical importance of developing systematic approaches to resource allocation that account for human cognitive limitations and well-being.
 
-In many practical settings, the optimal allocation strategy depends critically on the current system state. Consider an individual managing multiple professional and personal obligations simultaneously. The urgency of completing a time-critical task diminishes as progress accumulates, while the relative importance of longer-term career development activities increases correspondingly. This state-dependent prioritization creates a dynamic optimization problem that static allocation rules cannot adequately address. % [CITE: Dynamic programming and state-dependent decision making]
+Traditional time management strategies often fail because they ignore the finite nature of human lifespan and cognitive capacity \citep{Hart2024}. Productivity depends more fundamentally on managing attention than on rigid time scheduling, as cognitive limitations make it difficult to sustain focus across competing demands in dynamic environments \citep{Grant2019}. The increasing reliance on artificial intelligence and algorithmic management systems introduces additional complexity: while AI promises efficiency gains in documentation and task automation, it also risks depleting human cognitive resources and fostering decision-making that overlooks emotional and contextual nuances \citep{Reinhart2025}. Forecasts suggest near-total AI dominance in key domains by 2027, potentially reshaping how humans allocate limited time and cognitive effort in work systems \citep{Douthat2025}. Human resource management professionals themselves are overworked with increasingly complex jobs, making many suffer from burnout and leaving insufficient time for strategic issues \citep{aguinis_how_2024}.
+
+The urgency of this research agenda is amplified by the growing recognition that health status itself constitutes a resource. Studies demonstrate that chronic illness symptom severity is positively associated with burnout and negatively associated with work engagement, even after controlling for job demands and resources \citep{cook_individual_2024}. With over half the current workforce managing one or more chronic conditions, workplace interventions that improve employee health also enhance perceived organizational support, reduce burnout, and increase work engagement \citep{haynes_evaluating_2021}. The COVID-19 pandemic has further highlighted these challenges, as maintaining traditional approaches to work during crises predisposes systems to diminished quality of care and increased burnout risk \citep{yoo_critical_2022}. Research on STEM women recovering from burnout reveals that marginalized workers in highly institutionalized settings face unique challenges in the aftermath of burnout, with important implications for workforce sustainability \citep{lee_beyond_2024}.
+
+The gig economy introduces distinct resource allocation challenges through algorithmic management. Research shows that algorithmic evaluation and discipline increase job burnout by negatively impacting workers' basic psychological needs, while algorithmic direction can alleviate burnout by enhancing autonomy and competence \citep{peng_every_2025}. This dual nature of technology-mediated work extends to augmentation-based AI tools: while frequent usage leads to knowledge gain and improved task performance, it also causes information overload that impairs both performance and recovery \citep{shao_using_2024}. Technostressors stemming from information technology use have become a major source of stress, negatively affecting work-life balance through emotional exhaustion, though job self-efficacy can buffer these effects \citep{ma_impact_2021}. Understanding how configurations of technostressors interact to produce burnout represents a critical research frontier \citep{pflügner_deconstructing_2024}.
+
+The work-family interface presents another dimension of the sustainable life management challenge. Work-family conflict research has predominantly used composite-level approaches, but dimension-level analysis reveals that time-based, strain-based, and behavior-based conflicts operate through distinct mechanisms \citep{hetrick_theoretical_2023}. Emotional resource accumulation, distinct from emotional resource depletion, helps explain how work demands affect family functioning and employee well-being \citep{ilies_emotional_2020}. Flexible working arrangements offer one potential solution: meta-analytic evidence shows that having both schedule and location flexibility is more beneficial than either alone, and that flexibility availability may be more important than actual use \citep{harrop_meta_2025}. Experimental evidence confirms that smart working increases productivity while improving work-life balance, with men also increasing time dedicated to household activities \citep{angelici_smart_2024}. Compressed workweek implementations show that work-life balance increases while fatigue and time pressure decrease, with effects contingent on employee expectations \citep{mühl_you_2024}.
+
+Resource theory provides essential foundations for understanding these dynamics. Conservation of Resources (COR) theory and the Job Demands-Resources (JD-R) framework explain how job demands and resources relate to occupational strain, with job resources moderating the demand-strain relationship \citep{ghanayem_occupational_2020}. Research extends JD-R theory beyond the work domain to show how senior executives utilize both internal and external resources for coping and resource creation \citep{duan_extending_2024}. Supervisor resilience can cross over to employees, promoting well-being through lower burnout, lower psychological distress, and greater life satisfaction \citep{brady_supervisor_2025}. Managers can help employees navigate psychologically difficult decisions through three forms of self-management: equipping, conserving, and restoring the self across preparation, execution, and transition phases \citep{molinsky_how_2023}.
+
+Optimization and decision support approaches offer promising avenues for addressing these challenges. Constraint programming models for personal process management demonstrate effectiveness in reducing cognitive load and improving planning outcomes in dynamically changing situations \citep{oruç_constraint_2022}. Just-in-time access to knowledge repositories reduces cognitive load, enables learning, and builds problem-solving capabilities \citep{subramani_capability_2021}. In healthcare, routing and scheduling optimization can improve continuity of care while enhancing resource utilization \citep{lahrichi_first_2022}. Workforce sizing and shift scheduling decisions can balance efficiency with shift stability to improve worker well-being without sacrificing profitability \citep{mandal_tactical_2025}. Two-stage stochastic game models can guide capacity planning investments to address surgical waiting lists while accounting for uncertainty \citep{acuna_two_2024}. Managing flexible capacity in service systems helps prevent worker burnout in understaffed systems while improving service quality \citep{yuan_managing_2025}.
 
 This paper develops a mixed-integer stochastic programming formulation that captures these dynamics through explicit state tracking and uncertainty modeling. The proposed model makes three primary contributions to the literature. First, we formulate the multi-period resource allocation problem as a tractable MILP with state-dependent objective weights, enabling efficient solution using commercial solvers. Second, we incorporate uncertainty in recovery requirements through a scenario-based stochastic programming approach, providing robustness against variable cognitive demands. Third, we provide comprehensive computational experiments demonstrating the sensitivity of optimal allocations to initial conditions, with important implications for decision support system design.
 
-The remainder of this paper is organized as follows. Section~\ref{sec:literature} reviews the relevant literature on resource allocation and stochastic programming. Section~\ref{sec:model} presents the mathematical formulation, including decision variables, constraints, and the objective function. Section~\ref{sec:experiments} describes the computational experiments and presents the main empirical findings. Section~\ref{sec:discussion} discusses the managerial implications of the results, and Section~\ref{sec:conclusion} concludes with directions for future research.
+The remainder of this paper is organized as follows. Section~\ref{sec:literature} reviews the relevant literature on resource allocation, cognitive load theory, and work-life sustainability. Section~\ref{sec:model} presents the mathematical formulation, including decision variables, constraints, and the objective function. Section~\ref{sec:experiments} describes the computational experiments and presents the main empirical findings. Section~\ref{sec:discussion} discusses the managerial implications of the results, and Section~\ref{sec:conclusion} concludes with directions for future research.
 
 \section{Literature Review}\label{sec:literature}
 
-% [LITERATURE REVIEW SECTION - TO BE POPULATED WITH RELEVANT CITATIONS]
+This section situates our work within five interconnected streams of research: (1) cognitive load and attention management, (2) job demands, resources, and burnout, (3) work-life balance and flexibility, (4) technology and AI in the workplace, and (5) optimization approaches to resource allocation.
 
-The resource allocation problem has received extensive attention in the operations research literature. % [CITE: Seminal works on resource allocation]
+\subsection{Cognitive Load and Attention Management}
 
-Multi-period resource allocation models extend classical formulations by incorporating temporal dynamics and state evolution. % [CITE: Dynamic resource allocation literature]
+Cognitive load theory provides foundational insights for sustainable life management. Research demonstrates that cognitive training yields lasting benefits, with reasoning and speed-of-processing training showing effects up to 10 years in older adults, supporting strategies for sustaining cognitive resources across the lifespan \citep{NIA2014}. Contemporary applications of cognitive load theory in computer-based environments reveal the importance of worked examples, split-attention effects, and the self-management of cognitive load \citep{ayres_something_2020}. NSF-funded research on peak productivity develops tools using smartphones and smartwatches to track biological clocks and align tasks with peak alertness periods, addressing disruptions from mismatched timing that cause health issues and errors \citep{Lefkowitz2018}.
 
-Stochastic programming approaches have been widely applied to handle uncertainty in resource availability and demand. % [CITE: Stochastic programming foundations - Birge and Louveaux, etc.]
+The distinction between time management and attention management is critical. Traditional time management strategies fail because they ignore cognitive constraints, forcing individuals to confront limitations and make hard choices among competing priorities rather than attempting to optimize everything \citep{Hart2024}. Productivity hinges more on managing attention than rigid time scheduling, as cognitive limitations make it difficult to sustain focus across competing demands \citep{Grant2019}. This recognition has spurred interest in decision support systems that account for cognitive constraints. Research shows that just-in-time access to codified knowledge reduces cognitive load and enables learning, with workers accessing procedural knowledge from document repositories building firm-specific human capital \citep{subramani_capability_2021}.
 
-The application of optimization methods to personal productivity and time management represents an emerging research stream. % [CITE: Relevant work on personal productivity optimization]
+Human-AI collaboration offers promise for reducing cognitive burden but requires careful design. Studies find that granting users decision control improves trust and compliance with AI recommendations, while explanations may increase task complexity depending on the user's cognitive ability \citep{westphal_decision_2023}. The challenge is particularly acute for knowledge workers facing information overload. Mitigation strategies include streamlining information, investing in training and mental health resources, promoting deep work with breaks, and ensuring equitable workload distribution \citep{Robinson2024}.
 
-Rolling horizon approaches provide a practical implementation framework for multi-period optimization problems. % [CITE: Rolling horizon literature]
+\subsection{Job Demands, Resources, and Burnout}
+
+The Job Demands-Resources (JD-R) model provides a powerful framework for understanding sustainable life management. Research confirms that job resources moderate the relationship between job demands and occupational strain, with autonomy reducing strain under high workload conditions \citep{ghanayem_occupational_2020}. Extensions of JD-R theory beyond the work domain reveal that senior executives utilize both internal and external resources, and that job crafting creates adaptable resources to meet evolving demands \citep{duan_extending_2024}. Individual health status itself functions as a resource: chronic illness symptom severity predicts burnout and reduced work engagement above and beyond the effects of job demands and resources \citep{cook_individual_2024}.
+
+Conservation of Resources (COR) theory complements JD-R by explaining resource dynamics. Research distinguishes emotional resource accumulation from depletion, developing measurement instruments that capture how resource-generating activities (work engagement, co-worker support) and resource-depleting activities (job demands, emotional labor) differentially predict family functioning and life satisfaction \citep{ilies_emotional_2020}. Supervisor resilience can cross over to employees, with time-lagged studies demonstrating that supervisor resilience promotes employee well-being through lower burnout and psychological distress \citep{brady_supervisor_2025}. Managers can help employees navigate resource-intensive tasks through equipping, conserving, and restoring the self across task phases \citep{molinsky_how_2023}.
+
+Burnout represents a critical outcome when resource allocation fails. Healthcare providers face particular challenges: physicians' workflow decisions regarding when to perform electronic health record tasks significantly influence total workload and after-hours work, with implications for sustainable practice \citep{celik_frontiers_2024}. STEM women recovering from burnout employ distinct sensemaking strategies (combative, regenerative, and promissory) to renegotiate work trajectories, revealing the relational negotiation of protecting, investing, and fostering resources during disruption \citep{lee_beyond_2024}. Workplace interventions like the Live Healthy, Work Healthy program improve perceived organizational support, reduce burnout, and increase work engagement through structured support for chronic condition management \citep{haynes_evaluating_2021}.
+
+\subsection{Work-Life Balance and Flexibility}
+
+Work-family conflict research has evolved from composite-level to dimension-level analysis. Meta-analytic evidence demonstrates that time-based, strain-based, and behavior-based dimensions of conflict have distinct theoretical underpinnings and empirical correlates, with resource allocation theory particularly relevant to time-based conflict \citep{hetrick_theoretical_2023}. Crowdsourced firm ratings analysis reveals that work-life balance ratings influence organizational outcomes differently across industries, suggesting that decision makers should tailor motivation strategies to workforce needs \citep{liu_crowdsourced_2024}.
+
+Flexible working arrangements (FWAs) offer promising solutions to work-life challenges. Comprehensive meta-analysis identifies antecedents of FWA availability and use (managerial status, self-efficacy, task interdependency) and confirms beneficial outcomes including job satisfaction, organizational commitment, and family satisfaction \citep{harrop_meta_2025}. Importantly, having both flextime and flexplace proves more beneficial than either alone, and availability may matter more than actual use. Experimental evidence from a randomized trial demonstrates that flexible place and time of work increases productivity while improving work-life balance, with men also increasing household and care time \citep{angelici_smart_2024}.
+
+Alternative work schedules provide additional flexibility mechanisms. Longitudinal research on compressed workweek implementation shows that work-life balance increases while fatigue and time pressure decrease, with effects contingent on employee expectations regarding the schedule change \citep{mühl_you_2024}. The future of work increasingly involves hybrid arrangements despite return-to-office pressures, with research showing that work-from-anywhere policies can enhance performance through flexibility \citep{McGregor2023}.
+
+\subsection{Technology and AI in the Workplace}
+
+Technology plays a dual role in sustainable life management, serving as both enabler and stressor. Technostressors from information technology use have become a major stress source, negatively affecting work-life balance through emotional exhaustion, though job self-efficacy buffers these effects \citep{ma_impact_2021}. Configurational analysis reveals that interdependencies among technostressors (complementarity, contingency, and substitution) form patterns leading to burnout and reduced job performance, explaining why interventions addressing independent technostressors may fail \citep{pflügner_deconstructing_2024}. Information and communication technology can reduce nurses' burden by facilitating environmental management and non-contact communication while providing emotional support for patients, though implementation requires attention to digital health literacy and safety \citep{yoo_critical_2022}.
+
+Artificial intelligence introduces new dynamics into resource allocation. Reliance on algorithmic management in healthcare risks depleting human cognitive resources by favoring data summaries over nuanced listening, fostering cognitive miserliness and deskilling \citep{Reinhart2025}. In the gig economy, algorithmic evaluation and discipline increase burnout by negatively impacting psychological needs, while algorithmic direction can alleviate burnout by enhancing autonomy \citep{peng_every_2025}. Research on augmentation-based AI reveals countervailing mechanisms: frequent usage leads to knowledge gain and improved performance, but also causes information overload impairing performance and recovery \citep{shao_using_2024}. Generative AI can serve as a helpful assistant for both strategic and operational tasks when implemented with appropriate prompts and verification processes \citep{aguinis_how_2024}. Predictions of near-total AI dominance in key domains by 2027 raise fundamental questions about how humans will allocate limited time and cognitive effort as work systems evolve \citep{Douthat2025}.
+
+Human-robot collaboration in manufacturing demonstrates the potential for dynamic task allocation. Research on recyclofacturing emphasizes dynamic task distribution between humans and robots in assembly and welding, with attention to human factors for safe collaboration \citep{SCU2025}. The key insight is that technology should adapt task distribution to evolving conditions and recovery needs in human-machine teams.
+
+\subsection{Optimization Approaches to Resource Allocation}
+
+Operations research provides powerful tools for sustainable life management. Constraint programming models for personal process management decrease cognitive load from decision-making and generate positive user experiences, enabling better planning in less time and fast replanning in dynamically changing situations \citep{oruç_constraint_2022}. Behavioral research demonstrates that simpler yet efficient contracts can mitigate the trade-off between efficiency and complexity, explaining the prevalence of minimum order quantity terms in supply contracts \citep{tuncel_why_2022}. Understanding incentive structures is critical: research shows that incentivizing solely estimation accuracy can result in hidden inefficiency from strategic schedule inflation, while combined accuracy and speed incentives yield compressed but reliable schedules \citep{lorko_hidden_2023}.
+
+Healthcare resource allocation presents particularly challenging optimization problems. First Route Second Assign decomposition approaches enforce continuity of care in home health care while improving routing efficiency \citep{lahrichi_first_2022}. Two-stage stochastic game models guide capacity planning investments to address surgical waiting lists while accounting for demand uncertainty \citep{acuna_two_2024}. Multistage staffing strategies utilizing capacities of various flexibility help manage service systems facing worker shortages, preventing burnout in understaffed systems while improving service quality \citep{yuan_managing_2025}.
+
+Workforce sizing and scheduling optimization can balance multiple objectives. Research on last-mile delivery demonstrates that introducing limited shift flexibility achieves similar effects as completely flexible systems while ensuring better work-life balance for workers, showing that improved working conditions need not sacrifice profitability \citep{mandal_tactical_2025}. This insight that stability and efficiency can coexist underlies our approach to sustainable life management.
+
+\subsection{Research Gap and Contribution}
+
+Despite the extensive literature on individual aspects of cognitive load, burnout, work-life balance, technology, and optimization, no existing framework integrates these streams into a unified optimization model for personal resource allocation. Prior work either focuses on organizational interventions without mathematical formalization or develops optimization models without accounting for cognitive constraints and recovery dynamics. Our contribution addresses this gap by developing a tractable mixed-integer stochastic programming formulation that captures state-dependent prioritization, uncertain recovery requirements, and multi-dimensional value creation, providing a foundation for decision support systems that promote sustainable life management.
 
 \section{Model Formulation}\label{sec:model}
 
@@ -296,8 +371,8 @@ Several directions merit future investigation. Extensions to multi-stage stochas
 
 % [ACKNOWLEDGMENTS TO BE ADDED]
 
-\bibliographystyle{plainnat}
-\bibliography{references}
+\bibliographystyle{elsarticle-num-names}
+\bibliography{../literature/reference}
 
 \appendix
 
