@@ -109,23 +109,86 @@ This section presents the mathematical formulation of the multi-period resource 
 
 \subsection{Problem Setting}
 
-Consider a decision-maker who must allocate available time across $|\mathcal{I}| = 7$ task categories over a planning horizon of $T = 30$ days. Each task category $i \in \mathcal{I}$ is characterized by its resource consumption rates, minimum and maximum time bounds, and contribution to multiple value dimensions. The decision-maker faces uncertainty regarding recovery requirements following periods of high cognitive load, which we model through a discrete set of scenarios $\mathcal{S}$ with associated probabilities.
+Consider a decision-maker who must allocate available time across $|\mathcal{I}|$ task categories over a planning horizon of $T$ days. Each task category $i \in \mathcal{I}$ is characterized by its resource consumption rates, minimum and maximum time bounds, and contribution to multiple value dimensions. The decision-maker faces uncertainty regarding recovery requirements following periods of high cognitive load, which we model through a discrete set of scenarios $\mathcal{S}$ with associated probabilities.
 
 The problem exhibits two key structural features that distinguish it from standard resource allocation formulations. First, a critical priority task (Task 1) has a well-defined completion target, and progress toward this target affects both the objective function weights and the resource constraints. Second, cognitive recovery following emotionally demanding work requires uncertain amounts of time, reducing availability for productive activities.
 
+\subsection{Notation Reference}
+
+Table~\ref{tab:notation} provides a comprehensive reference for all mathematical notation used throughout this paper.
+
+\begin{table}[htbp]
+\centering
+\caption{Complete Notation Reference}
+\label{tab:notation}
+\begin{tabular}{ll}
+\toprule
+Symbol & Description \\
+\midrule
+\multicolumn{2}{l}{\textit{Sets and Indices}} \\
+$\mathcal{T}$ & Set of days in planning horizon, $\{1, 2, \ldots, T\}$ \\
+$\mathcal{I}$ & Set of task categories \\
+$\mathcal{S}$ & Set of recovery scenarios \\
+$T$ & Planning horizon length (days) \\
+$i$ & Index for tasks, $i \in \mathcal{I}$ \\
+$t$ & Index for days, $t \in \mathcal{T}$ \\
+$s$ & Index for scenarios, $s \in \mathcal{S}$ \\
+\midrule
+\multicolumn{2}{l}{\textit{Decision Variables}} \\
+$x_{it}$ & Binary indicator: 1 if task $i$ undertaken on day $t$ \\
+$h_{it}$ & Continuous hours allocated to task $i$ on day $t$ \\
+$G_t$ & Cumulative hours of Task 1 completed by end of day $t$ \\
+$g_t$ & Completion proportion for Task 1, $g_t = G_t / G^{\text{total}}$ \\
+$\sigma_t$ & Security level derived from $g_t$ \\
+$r_{ts}$ & Recovery hours required on day $t$ under scenario $s$ \\
+$z_{ts}$ & Binary indicator for high emotional load on day $t$, scenario $s$ \\
+\midrule
+\multicolumn{2}{l}{\textit{Resource Parameters}} \\
+$H^{\max}$ & Maximum usable hours per day \\
+$E^{\max}$ & Maximum energy units per day \\
+$M^{\max}$ & Maximum emotional capacity units per day \\
+$e_i$ & Energy consumption rate for task $i$ (units/hour) \\
+$m_i$ & Emotional cost rate for task $i$ (units/hour) \\
+$h_i^{\min}$ & Minimum hours required if task $i$ is selected \\
+$h_i^{\max}$ & Maximum hours allowed for task $i$ \\
+$G^{\text{total}}$ & Total required hours for Task 1 completion \\
+\midrule
+\multicolumn{2}{l}{\textit{Return Parameters}} \\
+$\alpha_i^I$ & Priority task return rate for task $i$ \\
+$\alpha_i^Y$ & Income/employability return rate for task $i$ \\
+$\alpha_i^K$ & Long-term capital return rate for task $i$ \\
+$\alpha_i^O$ & Optionality return rate for task $i$ \\
+\midrule
+\multicolumn{2}{l}{\textit{Weight Parameters}} \\
+$w_I(t, g_t)$ & Time and state-dependent priority task weight \\
+$w_Y(t), w_K(t), w_O(t)$ & Time-dependent weights for other dimensions \\
+$w_I^0, w_Y^0, w_K^0, w_O^0$ & Base weights for each return dimension \\
+$\rho_I, \rho_Y, \rho_K, \rho_O$ & Growth rates for weight evolution \\
+$\lambda_1$ & Cost coefficient for energy consumption \\
+$\lambda_2(g_t)$ & State-dependent cost coefficient for emotional load \\
+$\delta$ & Daily discount factor \\
+\midrule
+\multicolumn{2}{l}{\textit{Stochastic Parameters}} \\
+$\beta_s$ & Required recovery hours under scenario $s$ \\
+$p_s$ & Probability of scenario $s$ \\
+$M$ & Big-M constant for logical constraints \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Sets and Indices}
 
-We define $\mathcal{T} = \{1, 2, \ldots, T\}$ as the set of days in the planning horizon, where $T = 30$ represents a monthly planning cycle. The set of task categories is denoted $\mathcal{I} = \{1, 2, \ldots, 7\}$, where each task is anonymized for presentation purposes. Task 1 represents a high-priority time-critical activity, Task 2 corresponds to career development, Task 3 captures scheduled obligations, Task 4 represents recovery and restoration, Task 5 denotes long-term capital building activities, Task 6 captures social engagement, and Task 7 represents physical maintenance activities.
+We define the fundamental index sets that structure the mathematical formulation. The planning horizon is represented by $\mathcal{T} = \{1, 2, \ldots, T\}$, where $T$ denotes the planning cycle length (e.g., $T = 30$ for monthly planning). The set of task categories $\mathcal{I} = \{1, 2, \ldots, |\mathcal{I}|\}$ encompasses all activities competing for the decision-maker's limited resources. For presentation purposes, each task is anonymized: Task 1 represents a high-priority time-critical activity, Task 2 corresponds to career development, Task 3 captures scheduled obligations, Task 4 represents recovery and restoration, Task 5 denotes long-term capital building activities, Task 6 captures social engagement, and Task 7 represents physical maintenance activities.
 
-The uncertainty in recovery requirements is modeled through a discrete scenario set $\mathcal{S} = \{1, 2, 3, 4\}$, where each scenario $s$ specifies a required recovery duration $\beta_s$ with probability $p_s$. Based on empirical calibration, we set $\beta_s \in \{1, 2, 3, 4\}$ hours with corresponding probabilities $p_s = \{0.4, 0.3, 0.2, 0.1\}$.
+Uncertainty in recovery requirements is modeled through the discrete scenario set $\mathcal{S} = \{1, 2, \ldots, |\mathcal{S}|\}$, where each scenario $s$ specifies a required recovery duration $\beta_s$ with probability $p_s$. Based on empirical calibration, we set $\beta_s \in \{1, 2, 3, 4\}$ hours with corresponding probabilities $p_s = \{0.4, 0.3, 0.2, 0.1\}$ in our computational experiments.
 
 \subsection{Decision Variables}
 
-For each task $i \in \mathcal{I}$ and day $t \in \mathcal{T}$, we define two sets of primary decision variables. The binary variable $x_{it} \in \{0,1\}$ indicates whether task $i$ is undertaken on day $t$, while the continuous variable $h_{it} \in \R_+$ specifies the hours allocated to task $i$ on day $t$. These variables are linked through logical constraints ensuring that positive time allocation requires task selection.
+For each task $i \in \mathcal{I}$ and day $t \in \mathcal{T}$, we define two sets of primary decision variables. The binary variable $x_{it} \in \{0,1\}$ equals 1 if task $i$ is undertaken on day $t$ and 0 otherwise, while the continuous variable $h_{it} \in \R_+$ specifies the hours allocated to task $i$ on day $t$. These variables are linked through logical constraints ensuring that positive time allocation requires task selection.
 
-State variables track progress on the priority task over time. Let $G_t \in \R_+$ denote the cumulative hours of Task 1 work completed by the end of day $t$, and let $g_t = G_t / G^{\text{total}} \in [0,1]$ represent the proportion of total required work completed. The immigration security level $\sigma_t \in [0,1]$ is derived from $g_t$ and affects resource availability.
+State variables track progress on the priority task over time. Let $G_t \in \R_+$ denote the cumulative hours of Task 1 work completed by the end of day $t$, and define $g_t = G_t / G^{\text{total}} \in [0,1]$ as the proportion of total required work completed. The security level $\sigma_t \in [0,1]$, derived from $g_t$, captures how progress on the priority task affects available resource capacity.
 
-For each day $t$ and scenario $s$, auxiliary variables $r_{ts} \in \R_+$ capture required recovery hours, while binary indicators $z_{ts} \in \{0,1\}$ flag days with high emotional load.
+For uncertainty modeling, we introduce scenario-indexed auxiliary variables. The continuous variable $r_{ts} \in \R_+$ represents recovery hours required on day $t$ under scenario $s$, while the binary indicator $z_{ts} \in \{0,1\}$ flags days with high emotional load under scenario $s$.
 
 \subsection{Parameters}
 
@@ -209,7 +272,7 @@ g_t &= \min\left(1, \frac{G_t}{G^{\text{total}}}\right) \quad \forall t \in \mat
 
 \subsection{Model Properties}
 
-The formulation constitutes a mixed-integer linear program with $O(|\mathcal{I}| \cdot T \cdot |\mathcal{S}|)$ binary and continuous variables and constraints. For the parameter values used in our experiments ($|\mathcal{I}| = 7$, $T = 30$, $|\mathcal{S}| = 4$), this yields approximately 840 binary variables, 840 continuous variables, and 1,680 constraints. This problem size is well within the capability of modern MILP solvers such as Gurobi and CPLEX.
+The formulation constitutes a mixed-integer linear program with $O(|\mathcal{I}| \cdot T \cdot |\mathcal{S}|)$ binary and continuous variables and constraints. For typical parameter values (e.g., $|\mathcal{I}| = 7$, $T = 30$, $|\mathcal{S}| = 4$), this yields approximately 840 binary variables, 840 continuous variables, and 1,680 constraints. This problem size is well within the capability of modern MILP solvers such as Gurobi and CPLEX.
 
 \begin{proposition}[Feasibility]
 The model is feasible if and only if $\sum_{i \in \mathcal{I}} h_i^{\min} + \max_s \beta_s \leq H^{\max}$.
@@ -219,7 +282,7 @@ The proposition follows directly from observing that the binding constraints inv
 
 \section{Computational Experiments}\label{sec:experiments}
 
-This section presents the computational experiments designed to investigate the sensitivity of optimal resource allocations to initial conditions and planning parameters. All experiments were conducted using Gurobi 12.0 with a time limit of 60 seconds, MIP gap tolerance of 1\%, and 4 parallel threads.
+This section presents the computational experiments designed to investigate the sensitivity of optimal resource allocations to initial conditions and planning parameters. All experiments were conducted using Gurobi 12.0 with a time limit of 60 seconds, MIP gap tolerance of 1\%, and 4 parallel threads. For these experiments, we set $|\mathcal{I}| = 7$ tasks, $T = 30$ days, and $|\mathcal{S}| = 4$ scenarios, though the model accommodates arbitrary parameter configurations.
 
 \subsection{Experimental Design}
 
@@ -327,42 +390,5 @@ Several directions merit future investigation. Extensions to multi-stage stochas
 
 \bibliographystyle{elsarticle-num-names}
 \bibliography{../literature/reference}
-
-\appendix
-
-\section{Notation Summary}
-
-\begin{table}[htbp]
-\centering
-\caption{Complete Notation Reference}
-\begin{tabular}{ll}
-\toprule
-Symbol & Description \\
-\midrule
-\multicolumn{2}{l}{\textit{Sets}} \\
-$\mathcal{T}$ & Planning horizon days \\
-$\mathcal{I}$ & Task categories \\
-$\mathcal{S}$ & Recovery scenarios \\
-\midrule
-\multicolumn{2}{l}{\textit{Decision Variables}} \\
-$x_{it}$ & Binary task selection \\
-$h_{it}$ & Hours allocated \\
-$g_t$ & Completion proportion \\
-$\sigma_t$ & Security level \\
-$r_{ts}$ & Recovery hours \\
-\midrule
-\multicolumn{2}{l}{\textit{Parameters}} \\
-$H^{\max}$ & Daily hour budget (16) \\
-$E^{\max}$ & Daily energy budget (100) \\
-$M^{\max}$ & Daily emotional budget (100) \\
-$e_i$ & Energy consumption rate \\
-$m_i$ & Emotional cost rate \\
-$\alpha_i^j$ & Return rate in dimension $j$ \\
-$w_j(t)$ & Time-varying weights \\
-$\beta_s$ & Recovery hours in scenario $s$ \\
-$p_s$ & Scenario probability \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \end{document}

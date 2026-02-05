@@ -1,0 +1,279 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\usepackage{tikz}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{listings}
+
+% Page setup
+\geometry{margin=1in}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+
+% Define colors
+\definecolor{theoremblue}{RGB}{0,51,102}
+\definecolor{definitiongreen}{RGB}{0,102,51}
+\definecolor{exampleorange}{RGB}{204,102,0}
+\definecolor{keyconceptpurple}{RGB}{102,0,102}
+\definecolor{proofbrown}{RGB}{139,69,19}
+\definecolor{questionred}{RGB}{180,0,0}
+\definecolor{codegray}{RGB}{245,245,245}
+
+% Define theorem environments
+\tcbuselibrary{theorems,skins,breakable,listings}
+
+\newtcbtheorem[number within=section]{definition}{Definition}
+{colback=green!5,colframe=definitiongreen,fonttitle=\bfseries,breakable}{def}
+
+\newtcbtheorem[number within=section]{theorem}{Theorem}
+{colback=blue!5,colframe=theoremblue,fonttitle=\bfseries,breakable}{thm}
+
+\newtcbtheorem[number within=section]{keyconcept}{Key Concept}
+{colback=purple!5,colframe=keyconceptpurple,fonttitle=\bfseries,breakable}{key}
+
+\newtcbtheorem[number within=section]{questionbox}{Question and Answer}
+{colback=red!5,colframe=questionred,fonttitle=\bfseries,breakable}{qa}
+
+% Custom commands
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\E}{\mathbb{E}}
+
+\title{\textbf{Sustainable Life Management Model}\\
+\large Questions and Answers on Model Formulation and Solution Approach\\
+\large February 4, 2026}
+\author{Technical Documentation}
+\date{}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+%==============================================================================
+\section{Solution Methodology}
+%==============================================================================
+
+\begin{questionbox}{Is the Model Solved via Dynamic Programming?}{dp}
+\textbf{Question:} Is the model solved in a dynamic programming way, i.e., forward then backward? What does the implementation codebase in \texttt{/src/} show?
+
+\textbf{Answer:} \textbf{No}, the model is \textbf{not} solved using dynamic programming (forward-backward induction). Instead, it is formulated and solved as a \textbf{monolithic mixed-integer linear program (MILP)} using the Gurobi commercial solver.
+
+\textbf{Evidence from the codebase:}
+\begin{enumerate}
+    \item \textbf{Optimizer class} (\texttt{src/model/optimizer.py}): The model is built as a single Gurobi \texttt{Model} object that contains all decision variables for all time periods simultaneously:
+    \begin{itemize}
+        \item All variables $x_{it}$, $h_{it}$, $r_{ts}$, $z_{ts}$ for $t = 1, \ldots, T$ are created at once
+        \item All constraints across all periods are added to one model
+        \item The objective function spans the entire horizon
+    \end{itemize}
+    
+    \item \textbf{Solver class} (\texttt{src/model/solver.py}): The \texttt{Solve()} method simply calls \texttt{self.Model.optimize()}, which invokes Gurobi's branch-and-bound algorithm on the complete formulation.
+    
+    \item \textbf{No stage decomposition}: There is no evidence of:
+    \begin{itemize}
+        \item Value function computation
+        \item Backward induction over stages
+        \item State space enumeration
+        \item Bellman equation evaluation
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Should it be solved via DP?} The problem has characteristics that could theoretically support a DP approach (temporal structure, state variables $g_t$), but the current MILP formulation offers several advantages:
+\begin{itemize}
+    \item \textbf{Tractability}: With $O(|\mathcal{I}| \cdot T \cdot |\mathcal{S}|)$ variables, the problem is small enough for direct MILP solution (achieves optimality within 60 seconds).
+    \item \textbf{State space}: DP would require discretizing the continuous state space $(G_t, \sigma_t)$, introducing approximation errors.
+    \item \textbf{Implementation simplicity}: MILP leverages mature commercial solvers without custom algorithm development.
+\end{itemize}
+\end{questionbox}
+
+%==============================================================================
+\section{Uncertainty Modeling}
+%==============================================================================
+
+\begin{questionbox}{How is Stochastic Uncertainty Considered?}{uncertainty}
+\textbf{Question:} How is stochastic/uncertainty considered in the model beyond the definition/setting? How does it impact the solution process?
+
+\textbf{Answer:} The model employs a \textbf{scenario-based stochastic programming approach} to handle uncertainty. The uncertainty is operationalized through the following mechanisms:
+
+\textbf{1. Scenario Set Definition:}
+\begin{itemize}
+    \item Discrete scenario set $\mathcal{S} = \{1, 2, 3, 4\}$
+    \item Each scenario $s$ specifies recovery hours $\beta_s \in \{1, 2, 3, 4\}$
+    \item Probabilities $p_s = \{0.4, 0.3, 0.2, 0.1\}$
+\end{itemize}
+
+\textbf{2. Impact on Objective Function:}
+
+The objective computes the \textbf{expected value} over scenarios:
+$$\max \sum_{s \in \mathcal{S}} p_s \left[ \sum_{t=1}^T \delta^t \sum_{i \in \mathcal{I}} U_{it}(h_{it}, g_t) \right]$$
+
+From \texttt{src/model/objective.py}:
+\begin{verbatim}
+for Scen in range(config.SCENARIOS):
+    Prob = config.RECOVERY_PROBS[Scen]
+    Objective += Prob * (0.95 ** Day) * DayUtility
+\end{verbatim}
+
+\textbf{3. Impact on Constraints:}
+
+Scenario-indexed constraints ensure feasibility across all scenarios:
+\begin{itemize}
+    \item \textbf{Time availability}: $\sum_{i \in \mathcal{I}} h_{it} + r_{ts} \leq H^{\max}$ for all $t, s$
+    \item \textbf{Recovery triggering}: $r_{ts} \geq \beta_s \cdot z_{ts}$ for all $t, s$
+\end{itemize}
+
+This creates \textbf{scenario-dependent recovery requirements} while the primary allocation decisions $h_{it}$ remain first-stage (here-and-now) variables that do not depend on which scenario realizes.
+
+\textbf{4. Solution Implications:}
+\begin{itemize}
+    \item Decisions must be robust to all recovery scenarios
+    \item Worst-case scenario ($\beta_4 = 4$ hours) constrains maximum productive time
+    \item Expected value objective balances performance across scenarios
+\end{itemize}
+\end{questionbox}
+
+\begin{questionbox}{Where is Uncertainty Explicitly Modeled?}{whereuncertain}
+\textbf{Question:} Where in the model does it explicitly consider uncertainty and how is it modeled?
+
+\textbf{Answer:} Uncertainty appears explicitly in three model components:
+
+\textbf{1. Stochastic Recovery Constraints} (Lines 200-202 in Formulation.tex):
+\begin{align}
+\sum_{i \in \mathcal{I}} m_i \cdot h_{it} &\geq 0.8 \cdot M^{\max} - M \cdot (1 - z_{ts}) \quad \forall t \in \mathcal{T}, s \in \mathcal{S} \\
+r_{ts} &\geq \beta_s \cdot z_{ts} \quad \forall t \in \mathcal{T}, s \in \mathcal{S}
+\end{align}
+
+\textbf{Interpretation:}
+\begin{itemize}
+    \item First constraint: If emotional load exceeds 80\% of capacity, the binary indicator $z_{ts}$ is forced to 1
+    \item Second constraint: When $z_{ts} = 1$, recovery time $r_{ts}$ must be at least $\beta_s$ hours
+    \item The big-M formulation models the logical implication: high emotional load $\Rightarrow$ recovery required
+\end{itemize}
+
+\textbf{2. Time Availability with Scenario-Indexed Recovery}:
+$$\sum_{i \in \mathcal{I}} h_{it} + r_{ts} \leq H^{\max} \quad \forall t \in \mathcal{T}, s \in \mathcal{S}$$
+
+This ensures that productive time plus scenario-dependent recovery does not exceed available hours.
+
+\textbf{3. Expected Value Objective}:
+$$\E_s \left[ \sum_{t=1}^T \delta^t \sum_{i \in \mathcal{I}} U_{it}(h_{it}, g_t) \right] = \sum_{s \in \mathcal{S}} p_s \cdot \text{Utility under scenario } s$$
+
+\textbf{Model Classification:}
+
+This is a \textbf{two-stage stochastic program with recourse}:
+\begin{itemize}
+    \item \textbf{First-stage decisions}: Task selections $x_{it}$ and allocations $h_{it}$ (made before uncertainty resolves)
+    \item \textbf{Second-stage/recourse decisions}: Recovery hours $r_{ts}$ (depend on scenario)
+    \item \textbf{Relatively complete recourse}: Any first-stage decision can be made feasible by adjusting recovery
+\end{itemize}
+\end{questionbox}
+
+%==============================================================================
+\section{Key Concepts from Integer Programming}
+%==============================================================================
+
+\begin{keyconcept}{Mixed-Integer Linear Programming (MILP)}{milp}
+A MILP has the general form:
+\begin{align*}
+\max \quad & c^T x + d^T y \\
+\text{s.t.} \quad & Ax + By \leq b \\
+& x \in \Z^p, \quad y \in \R^q
+\end{align*}
+
+where $x$ are integer variables and $y$ are continuous variables.
+
+\textbf{Solution approaches:}
+\begin{itemize}
+    \item \textbf{Branch-and-bound}: Systematically explores the solution space using LP relaxations
+    \item \textbf{Branch-and-cut}: Adds cutting planes to tighten LP relaxations
+    \item \textbf{Dynamic programming}: Stage-wise optimization with value functions (not used here)
+\end{itemize}
+
+The SLM model uses MILP because:
+\begin{enumerate}
+    \item Binary selection variables $x_{it} \in \{0,1\}$ for task activation
+    \item Continuous allocation variables $h_{it} \in \R_+$ for hours
+    \item Linear objective and constraints enable efficient solution
+\end{enumerate}
+\end{keyconcept}
+
+\begin{keyconcept}{Stochastic Programming}{stochprog}
+Stochastic programming optimizes decisions under uncertainty:
+
+\textbf{Two-stage formulation:}
+\begin{align*}
+\min_{x} \quad & c^T x + \E_\xi[Q(x, \xi)] \\
+\text{s.t.} \quad & Ax = b, \quad x \geq 0
+\end{align*}
+
+where $Q(x, \xi)$ is the optimal value of the second-stage problem given first-stage decision $x$ and scenario $\xi$.
+
+\textbf{Scenario-based approximation:}
+
+Replace expectation with weighted sum over discrete scenarios:
+$$\E_\xi[Q(x, \xi)] \approx \sum_{s \in \mathcal{S}} p_s \cdot Q(x, s)$$
+
+This converts the stochastic program to a deterministic equivalent problem (DEP), which is exactly what the SLM formulation implements.
+\end{keyconcept}
+
+\begin{keyconcept}{Dynamic Programming vs. MILP}{dpvsmilp}
+\textbf{Dynamic Programming:}
+\begin{itemize}
+    \item Decomposes problem by stages/time periods
+    \item Computes value functions via backward induction
+    \item Optimal policy obtained by forward simulation
+    \item Suffers from ``curse of dimensionality'' with continuous states
+\end{itemize}
+
+\textbf{Bellman equation:}
+$$V_t(s) = \max_{a \in A(s)} \left\{ r(s, a) + \gamma \sum_{s'} P(s'|s,a) V_{t+1}(s') \right\}$$
+
+\textbf{MILP approach:}
+\begin{itemize}
+    \item Formulates entire horizon as single optimization
+    \item Exploits problem structure via branch-and-bound
+    \item Handles continuous variables naturally
+    \item Leverages commercial solver technology
+\end{itemize}
+
+\textbf{When to use each:}
+\begin{itemize}
+    \item \textbf{DP}: Large discrete state spaces, Markov structure, need for policy
+    \item \textbf{MILP}: Moderate problem size, mixed integer-continuous variables, commercial solver access
+\end{itemize}
+
+The SLM problem falls into the MILP-favorable category due to continuous state variables and tractable problem size.
+\end{keyconcept}
+
+%==============================================================================
+\section{Summary}
+%==============================================================================
+
+\begin{keyconcept}{Key Takeaways}{summary}
+\begin{enumerate}
+    \item \textbf{Solution method}: The SLM model is solved as a monolithic MILP using Gurobi's branch-and-bound algorithm, \textbf{not} via dynamic programming.
+    
+    \item \textbf{Uncertainty handling}: Scenario-based stochastic programming with discrete scenarios for recovery requirements. The objective maximizes expected utility, and constraints ensure feasibility across all scenarios.
+    
+    \item \textbf{Explicit uncertainty locations}:
+    \begin{itemize}
+        \item Scenario-indexed recovery variables $r_{ts}$
+        \item Binary high-load indicators $z_{ts}$
+        \item Time availability constraints
+        \item Expected value objective
+    \end{itemize}
+    
+    \item \textbf{Two-stage structure}: First-stage (here-and-now) decisions for task allocation; second-stage (recourse) decisions for recovery adjustment.
+    
+    \item \textbf{Tractability}: Problem size $O(|\mathcal{I}| \cdot T \cdot |\mathcal{S}|)$ is well-suited for direct MILP solution without decomposition.
+\end{enumerate}
+\end{keyconcept}
+
+\end{document}
