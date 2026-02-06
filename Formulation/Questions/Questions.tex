@@ -46,7 +46,7 @@
 
 \title{\textbf{Sustainable Life Management Model}\\
 \large Questions and Answers on Model Formulation and Solution Approach\\
-\large February 4, 2026}
+\large February 6, 2026}
 \author{Technical Documentation}
 \date{}
 
@@ -59,6 +59,32 @@
 %==============================================================================
 \section{Solution Methodology}
 %==============================================================================
+
+\begin{questionbox}{Is the Problem Trivially Solvable by Greedy Algorithm?}{greedy}
+\textbf{Question:} If we want to maximize expected discounted utility return, does solving the problem become trivial given that resources are allocated to tasks ordered by their weights? Can this be solved by a greedy algorithm? Is this the current setting and formulation?
+
+\textbf{Answer:} \textbf{No}, the problem is \textbf{not} trivially solvable by a greedy algorithm, despite the objective function being linear in the allocation variables $h_{it}$.
+
+\textbf{Why a greedy approach seems plausible:}
+
+In a simple single-period linear knapsack with one constraint, a greedy algorithm that orders items by value-to-weight ratio and packs them in decreasing order achieves optimality for the LP relaxation. Since the current objective is linear in $h_{it}$, one might compute a per-unit return for each task and allocate greedily.
+
+\textbf{Why greedy fails in practice:}
+
+\begin{enumerate}
+    \item \textbf{State-dependent coupling across periods.} The priority weight $w_I(t, g_t) = w_I^0 \cdot (1 - g_t) \cdot \exp(-\rho_I t/T)$ depends on $g_t$, which accumulates from $\sum_{\tau=1}^{t} h_{1,\tau}$. Allocating more hours to Task 1 today reduces its future weight through $(1 - g_t)$. A greedy algorithm cannot anticipate this intertemporal feedback.
+    
+    \item \textbf{Multi-dimensional knapsack structure.} Each period has three simultaneous constraints: time ($H^{\max}$), energy ($E^{\max}$), and emotional capacity ($M^{\max}$). Multi-dimensional knapsack is NP-hard; greedy does not guarantee optimality even in the single-period case.
+    
+    \item \textbf{Minimum allocation requirements.} The constraint $h_i^{\min} \cdot x_{it} \leq h_{it}$ means a task cannot receive a fractional amount below its minimum. This creates discrete jumps in feasible allocations that preclude continuous greedy solutions.
+    
+    \item \textbf{Stochastic recovery coupling.} Recovery constraints link emotional load to available time through $r_{ts} \geq \beta_s \cdot z_{ts}$. Choosing high-emotion tasks reduces time available for other tasks in a scenario-dependent manner. Greedy ranking ignores this coupling.
+\end{enumerate}
+
+\textbf{The current formulation:}
+
+The current formulation is a multi-period MILP with state-dependent weights, multiple resource constraints, and stochastic recovery. This places it in the class of NP-hard combinatorial optimization problems. The MILP formulation solved by Gurobi's branch-and-bound is the appropriate approach, not a greedy heuristic.
+\end{questionbox}
 
 \begin{questionbox}{Is the Model Solved via Dynamic Programming?}{dp}
 \textbf{Question:} Is the model solved in a dynamic programming way, i.e., forward then backward? What does the implementation codebase in \texttt{/src/} show?
@@ -175,6 +201,164 @@ This is a \textbf{two-stage stochastic program with recourse}:
 \end{itemize}
 \end{questionbox}
 
+\begin{questionbox}{Should Stochastic Returns Be Considered in Addition to Stochastic Size?}{stochreturns}
+\textbf{Question:} For the uncertainty part, should stochastic returns also be considered in addition to stochastic size/requirement (1, 2, 3, 4 hours)? Is this already considered given the decay function, or not?
+
+\textbf{Answer:} \textbf{No}, the current model does \textbf{not} model stochastic returns. The decay function captures a different phenomenon. Stochastic returns should be added for a more complete uncertainty treatment.
+
+\textbf{What the decay function captures (deterministic, not stochastic):}
+
+The weight functions
+\begin{align}
+w_I(t, g_t) &= w_I^0 \cdot (1 - g_t) \cdot \exp(-\rho_I t/T) \\
+w_Y(t) &= w_Y^0 \cdot (1 + \rho_Y t/T)
+\end{align}
+model \textit{systematic, deterministic} trends in priority over time and state. They do not model \textit{random fluctuations} in how productive a task hour is. The decay function is known in advance and identical across all scenarios.
+
+\textbf{What stochastic returns would capture (random, scenario-dependent):}
+
+In reality, the return from one hour of work varies due to:
+\begin{itemize}
+    \item Cognitive state fluctuations (alertness, focus quality)
+    \item Environmental interruptions (unexpected meetings, distractions)
+    \item Task complexity variation (some days a problem is harder than expected)
+    \item Learning curve effects (breakthrough insights vs. dead ends)
+\end{itemize}
+
+\textbf{Extended formulation with stochastic returns:}
+
+Let $\tilde{\alpha}_{is}^d$ denote the return rate for task $i$ in dimension $d \in \{I, Y, K, O\}$ under scenario $s$. The extended utility becomes:
+\begin{align}
+\tilde{U}_{its}(h_{it}, g_t) = &\; w_I(t, g_t) \cdot \tilde{\alpha}_{is}^I \cdot h_{it} + w_Y(t) \cdot \tilde{\alpha}_{is}^Y \cdot h_{it} \nonumber \\
+&+ w_K(t) \cdot \tilde{\alpha}_{is}^K \cdot h_{it} + w_O(t) \cdot \tilde{\alpha}_{is}^O \cdot h_{it} \nonumber \\
+&- \lambda_1 \cdot e_i \cdot h_{it} - \lambda_2(g_t) \cdot m_i \cdot h_{it}
+\end{align}
+
+\textbf{Relationship between decay and stochastic returns:}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Aspect & Decay Function & Stochastic Returns \\
+\midrule
+Nature & Deterministic & Random \\
+Varies with & Time $t$ and state $g_t$ & Scenario $s$ \\
+Models & Priority evolution & Productivity fluctuation \\
+Known when? & Before optimization & Revealed after decision \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The two are \textit{orthogonal}: decay governs how much we \textit{want} to do a task, while stochastic returns govern how much \textit{value} we get from doing it. With both stochastic returns and stochastic recovery sizes, the problem becomes a stochastic knapsack with uncertainty in both the ``return'' and ``size'' dimensions.
+\end{questionbox}
+
+%==============================================================================
+\section{Multi-Agent Extension and Advanced Algorithms}
+%==============================================================================
+
+\begin{questionbox}{Should Multiple Agents Be Considered?}{multiagent}
+\textbf{Question:} The problem setting is designed for one employee/agent. Should multiple employees/agents be considered to make the problem more realistic and applicable? Does this become a multiple knapsack with stochastic return and size? Is it impactful for the introduction/background?
+
+\textbf{Answer:} \textbf{Yes}, extending to multiple agents significantly enhances practical applicability and transforms the problem into a \textbf{multiple knapsack problem with stochastic returns and sizes}.
+
+\textbf{Why multiple agents matter:}
+
+\begin{enumerate}
+    \item \textbf{Organizational realism.} Real workplaces involve teams where multiple employees share resources (meeting rooms, supervisory time, collaborative task capacity). Individual optimization without coordination leads to resource contention and suboptimal organizational outcomes.
+    
+    \item \textbf{Coupling constraints.} Shared resources create coupling across agents:
+    $$\sum_{j \in \mathcal{J}} h_{ijt} \leq C_i^{\max} \quad \forall i \in \mathcal{I}_{\text{shared}}, t \in \mathcal{T}$$
+    These constraints prevent the multi-agent problem from decomposing into independent single-agent subproblems.
+    
+    \item \textbf{Problem classification.} With multiple agents, each agent represents a ``knapsack'' with individual capacity constraints (time, energy, emotional load), and tasks represent ``items'' that must be packed. With stochastic returns $\tilde{\alpha}_{is}^d$ and stochastic sizes $\beta_s$, this is precisely a \textit{multiple knapsack problem with stochastic returns and sizes}.
+\end{enumerate}
+
+\textbf{Multi-agent formulation:}
+
+Let $\mathcal{J} = \{1, \ldots, |\mathcal{J}|\}$ be the set of agents. The extended objective is:
+$$\max \quad \sum_{j \in \mathcal{J}} \sum_{s \in \mathcal{S}} p_s \left[ \sum_{t=1}^T \delta^t \sum_{i \in \mathcal{I}} \tilde{U}_{ijts}(h_{ijt}, g_{jt}) \right]$$
+
+Subject to agent-specific constraints:
+\begin{align}
+\sum_{i \in \mathcal{I}} h_{ijt} + r_{jts} &\leq H_j^{\max} \quad \forall j, t, s \\
+\sum_{i \in \mathcal{I}} e_i \cdot h_{ijt} &\leq E_j^{\max} \quad \forall j, t \\
+\sum_{i \in \mathcal{I}} m_i \cdot h_{ijt} &\leq M_j^{\max} \quad \forall j, t
+\end{align}
+
+\textbf{Impact on introduction/background:}
+
+\textbf{Yes}, the multi-agent extension is impactful for the introduction. The existing literature review already discusses organizational burnout, workforce scheduling, and team productivity. The multi-agent extension provides:
+\begin{itemize}
+    \item A direct bridge from individual well-being research to organizational resource management
+    \item Connection to the JD-R and COR theories at the team level
+    \item Relevance to the gig economy and algorithmic management literature
+    \item A richer problem class (multiple knapsack) that justifies advanced algorithmic investigation
+\end{itemize}
+
+\textbf{Problem size scaling:}
+
+For $|\mathcal{J}|$ agents, the problem size grows to $O(|\mathcal{J}| \cdot |\mathcal{I}| \cdot T \cdot |\mathcal{S}|)$ variables. With $|\mathcal{J}| = 10$, $|\mathcal{I}| = 7$, $T = 30$, $|\mathcal{S}| = 4$: approximately 8,400 binary variables and 16,800 constraints. This tenfold increase motivates decomposition algorithms.
+\end{questionbox}
+
+\begin{questionbox}{Can Advanced Algorithms Beat Direct Gurobi Solution?}{algorithms}
+\textbf{Question:} Would the multiple knapsack with stochasticity be solved using more advanced solution algorithms such as branch-and-cut, column generation, and Benders decomposition, and then beat the performance or solution found by Gurobi?
+
+\textbf{Answer:} \textbf{Potentially yes}, particularly for the multi-agent extension. The problem structure creates natural decomposition opportunities that specialized algorithms can exploit.
+
+\textbf{1. Benders Decomposition:}
+
+\textit{Why it fits:} The two-stage stochastic structure separates naturally:
+\begin{itemize}
+    \item \textbf{Master problem}: First-stage allocation decisions $x_{ijt}, h_{ijt}$ (integer)
+    \item \textbf{Subproblems}: For each scenario $s$, determine recovery $r_{jts}$ (continuous LP)
+\end{itemize}
+
+Optimality cuts from subproblems iteratively tighten the master. When $|\mathcal{S}|$ is large (many scenarios), Benders avoids solving the full deterministic equivalent and can be significantly faster.
+
+\textit{Expected advantage:} Strong when the number of scenarios grows beyond what direct MILP can handle efficiently (e.g., $|\mathcal{S}| > 50$ with continuous distributions discretized finely).
+
+\textbf{2. Column Generation (Dantzig-Wolfe Decomposition):}
+
+\textit{Why it fits:} The multi-agent formulation has a \textbf{block-diagonal structure}:
+\begin{itemize}
+    \item Each agent's constraints form an independent block
+    \item Coupling constraints (shared resources) link agents at the master level
+    \item Each ``column'' represents a complete schedule for one agent
+\end{itemize}
+
+The master problem selects columns (agent schedules) satisfying coupling constraints. The pricing subproblem generates improving schedules for individual agents, each of which is a tractable single-agent MILP.
+
+\textit{Expected advantage:} Strong when $|\mathcal{J}|$ is large. The LP relaxation bound from column generation is at least as tight as the direct LP relaxation, often significantly tighter.
+
+\textbf{3. Branch-and-Cut:}
+
+\textit{Why it fits:} The knapsack substructure admits well-known valid inequalities:
+\begin{itemize}
+    \item \textbf{Cover inequalities}: For each knapsack constraint, identify minimal covers and add cutting planes
+    \item \textbf{Lifted cover inequalities}: Strengthen cover cuts by coefficient lifting
+    \item \textbf{Gomory mixed-integer cuts}: Derive from fractional LP relaxation solutions
+    \item \textbf{Surrogate relaxation}: Combine multiple knapsack constraints into a single surrogate constraint for bound computation
+\end{itemize}
+
+\textit{Expected advantage:} Tighter LP relaxations reduce the branch-and-bound tree size. Most effective when integrated with Benders or column generation.
+
+\textbf{When will they beat Gurobi?}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Method & Beats Gurobi when & Unlikely to beat when \\
+\midrule
+Benders & $|\mathcal{S}| \gg 4$ & Small scenario count \\
+Column gen. & $|\mathcal{J}| \gg 1$ & Single agent \\
+Branch-cut & Weak LP relaxation & Gurobi cuts suffice \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Important caveat:} Gurobi internally implements many of these techniques (branch-and-cut with Gomory cuts, cover cuts, etc.). The advantage of custom implementations lies in exploiting \textit{problem-specific} structure that generic solvers cannot recognize automatically, such as the agent-decomposable block structure or the two-stage scenario structure. For the current single-agent formulation with $|\mathcal{S}| = 4$, direct Gurobi solution in 60 seconds is likely near-optimal. The decomposition advantage emerges at scale.
+\end{questionbox}
+
 %==============================================================================
 \section{Key Concepts from Integer Programming}
 %==============================================================================
@@ -258,21 +442,30 @@ The SLM problem falls into the MILP-favorable category due to continuous state v
 
 \begin{keyconcept}{Key Takeaways}{summary}
 \begin{enumerate}
-    \item \textbf{Solution method}: The SLM model is solved as a monolithic MILP using Gurobi's branch-and-bound algorithm, \textbf{not} via dynamic programming.
+    \item \textbf{Solution method}: The SLM model is solved as a monolithic MILP using Gurobi's branch-and-bound algorithm, \textbf{not} via dynamic programming or greedy algorithms.
     
-    \item \textbf{Uncertainty handling}: Scenario-based stochastic programming with discrete scenarios for recovery requirements. The objective maximizes expected utility, and constraints ensure feasibility across all scenarios.
+    \item \textbf{Non-triviality}: Despite linear per-period returns, the problem is NP-hard due to state-dependent weight coupling, multi-dimensional knapsack constraints, minimum allocation requirements, and stochastic recovery coupling. Greedy ranking by weight does not yield optimal solutions.
+    
+    \item \textbf{Uncertainty handling}: Scenario-based stochastic programming with discrete scenarios for both recovery requirements (stochastic size) and task returns (stochastic returns). The objective maximizes expected utility, and constraints ensure feasibility across all scenarios.
+    
+    \item \textbf{Decay vs. stochastic returns}: The decay function $w_I(t, g_t)$ captures deterministic temporal priority evolution. Stochastic returns $\tilde{\alpha}_{is}^d$ capture random productivity fluctuations. These are orthogonal and both should be modeled.
     
     \item \textbf{Explicit uncertainty locations}:
     \begin{itemize}
         \item Scenario-indexed recovery variables $r_{ts}$
+        \item Stochastic return coefficients $\tilde{\alpha}_{is}^d$
         \item Binary high-load indicators $z_{ts}$
         \item Time availability constraints
         \item Expected value objective
     \end{itemize}
     
+    \item \textbf{Multi-agent extension}: Extending to $|\mathcal{J}|$ agents yields a multiple knapsack problem with stochastic returns and sizes, with $O(|\mathcal{J}| \cdot |\mathcal{I}| \cdot T \cdot |\mathcal{S}|)$ variables. Coupling constraints through shared resources prevent independent decomposition.
+    
+    \item \textbf{Advanced algorithms}: Benders decomposition (scenario structure), column generation (agent structure), and branch-and-cut (knapsack polytope) can exploit problem structure. These are expected to outperform direct Gurobi solution as team size and scenario count grow.
+    
     \item \textbf{Two-stage structure}: First-stage (here-and-now) decisions for task allocation; second-stage (recourse) decisions for recovery adjustment.
     
-    \item \textbf{Tractability}: Problem size $O(|\mathcal{I}| \cdot T \cdot |\mathcal{S}|)$ is well-suited for direct MILP solution without decomposition.
+    \item \textbf{Tractability}: Single-agent problem with $O(|\mathcal{I}| \cdot T \cdot |\mathcal{S}|)$ is tractable for direct MILP. Multi-agent extension motivates decomposition for scalability.
 \end{enumerate}
 \end{keyconcept}
 
