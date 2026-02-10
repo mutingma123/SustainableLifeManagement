@@ -72,9 +72,9 @@
 	\tableofcontents
 \end{frame}
 
-\section{Background}
+\section{Motivation}
 
-\begin{frame}{Cognitive Overload, Burnout}
+\begin{frame}{Motivation: Cognitive Overload, Burnout}
 	\begin{itemize}
 		\item Cognitive overload from excessive demands leads to billions of lost working
 			days annually \citep{Robinson2024}.
@@ -88,13 +88,13 @@
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{Motivation}
-	\begin{itemize}
-		\item Cognitive overload and limited attention make time allocation fragile \citep{Robinson2024, Grant2019}.
-		\item Sustainable planning needs explicit tradeoffs under finite time \citep{Hart2024}.
-		\item Team settings add coordination and capacity coupling across agents.
-	\end{itemize}
-\end{frame}
+% \begin{frame}{Motivation}
+% 	\begin{itemize}
+% 		\item Cognitive overload and limited attention make time allocation fragile \citep{Robinson2024, Grant2019}.
+% 		\item Sustainable planning needs explicit tradeoffs under finite time \citep{Hart2024}.
+% 		\item Team settings add coordination and capacity coupling across agents.
+% 	\end{itemize}
+% \end{frame}
 
 \section{Problem Formulation}
 
@@ -199,13 +199,13 @@
 \begin{frame}{Stochastic Knapsack: Cutting Planes and Dominance}
 	\begin{itemize}
 		\item \citet{büyüktahtakın_scenario_2023} derive \textbf{scenario dominance cuts} for multi-stage
-			stochastic MIPs applied to the dynamic multi-dimensional knapsack.
+			\textcolor{red}{stochastic MIPs} applied to the dynamic multi-dimensional knapsack.
 			Strong dominance cuts reduce solution time with 0.06\% average deviation
 			from optimality.
 		\item \citet{büyüktahtakın_stage_2022} generalize this via \textbf{Stage-$t$ Scenario Dominance}
 			for risk-averse (mean-CVaR) knapsack problems, achieving one-to-two
 			orders of magnitude speedup.
-		\item \citet{joung_comparative_2023} compare LP relaxation bounds for the robust knapsack
+		\item \citet{joung_comparative_2023} \textcolor{red}{compare LP relaxation bounds} for the robust knapsack
 			problem and show that extended formulations yield identical bounds.
 	\end{itemize}
 \end{frame}
@@ -213,10 +213,10 @@
 \begin{frame}{Distributionally Robust and Risk-averse Knapsack}
 	\begin{itemize}
 		\item \citet{bos_distributionally_2024} approximate the stochastic knapsack with periodic
-			scheduled arrivals using \textbf{Wasserstein DRO}, producing robust healthcare
+			scheduled arrivals using \textbf{Wasserstein Distributed Robust Optimization (DRO)}, producing robust healthcare
 			surgical schedules.
 		\item \citet{ding_balancing_2022} propose a target-based DRO knapsack with
-			\textbf{uncertain profit and capacity}, reformulated as a second-order conic program.
+			\textbf{uncertain profit and capacity}, reformulated as a \textcolor{red}{second-order conic program}.
 		\item \citet{merzifonluoglu_risk_2021} study the \textbf{risk-averse static stochastic knapsack}
 			with CVaR and mean-standard deviation objectives, deriving efficient
 			heuristics for normally distributed resource consumption.
@@ -234,17 +234,17 @@
 			solving stochastic multi-knapsack instances in 20\% of the time with
 			less than 0.1\% optimality gap.
 		\item \citet{lefebvre_adjustable_2024} reformulate adjustable robust optimization with
-			\textbf{discrete uncertainty} and apply branch-and-cut to the multiple
-			knapsack problem with uncertain weights.
-		\item \citet{lyu_stochastic_2022} unify responsive, adaptive, and anticipative allocation
-			policies for the stochastic knapsack through \textbf{persistency values}.
+			\textbf{discrete uncertainty} and apply \textcolor{red}{branch-and-cut to the multiple
+			knapsack problem with uncertain weights}.
+		\item \citet{lyu_stochastic_2022} unify \textcolor{red}{responsive, adaptive, and anticipative allocation
+			policies} for the stochastic knapsack through \textbf{persistency values}.
 	\end{itemize}
 \end{frame}
 
 \begin{frame}{Assignment, Scheduling, and Workforce Planning}
 	\begin{itemize}
 		\item \citet{rezaeian_assignment_2024} model the \textbf{stochastic assignment of projects} to
-			managers via multi-stage stochastic integer programming with heuristic
+			managers via \textcolor{red}{multi-stage stochastic integer programming} with heuristic
 			algorithms for large instances.
 		\item \citet{nasirian_multiskilled_2025} solve multiskilled workforce staffing and scheduling
 			via \textbf{logic-based Benders decomposition}, achieving 29x speedup over
@@ -254,7 +254,7 @@
 			cross-training and worker assignment.
 		\item \citet{novak_scheduling_2022} connect stochastic parallel machine scheduling to an
 			\textbf{inflatable stochastic knapsack} pricing subproblem within
-			branch-and-price.
+			\textcolor{red}{branch-and-price}.
 	\end{itemize}
 \end{frame}
 
@@ -304,15 +304,15 @@
 		\item The formulation models cognitive resource allocation as a
 			\textbf{multiple knapsack problem with stochastic sizes and returns},
 			capturing workload-dependent productivity via $R_{ij} = g_{ij}(S_{ij}) + \varepsilon_{ij}$.
-		\item Chance constraints operationalize cognitive/attention limits,
+		\item \textcolor{red}{Chance constraints} operationalize cognitive/attention limits,
 			controlling overload risk while retaining assignment flexibility.
 		\item Scenario dominance cuts \citep{büyüktahtakın_scenario_2023},
 			DRO reformulations \citep{bos_distributionally_2024, ding_balancing_2022},
 			and ML-accelerated decomposition \citep{larsen_fast_2024} are natural
 			tools for scaling the model to organizational settings.
-		\item Data-driven SAA \citep{chen_sample_2022} and risk-averse objectives
-			\citep{merzifonluoglu_risk_2021} provide robust solution strategies
-			under limited distributional information.
+		% \item Data-driven SAA \citep{chen_sample_2022} and risk-averse objectives
+		% 	\citep{merzifonluoglu_risk_2021} provide robust solution strategies
+		% 	under limited distributional information.
 	\end{itemize}
 \end{frame}
 
