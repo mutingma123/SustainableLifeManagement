@@ -52,18 +52,14 @@
 }
 
 \AtBeginSection[]{
-	\begin{frame}[plain]
-		\vfill
-		\begin{center}
-			{\usebeamerfont{title}\color{SLMBlue}\insertsection}
-		\end{center}
-		\vfill
+	\begin{frame}{Outline}
+		\tableofcontents[currentsection]
 	\end{frame}
 }
 
-\title{Sustainable Life Management}
-\subtitle{State Dependent Resource Allocation Under Uncertainty}
-\author{Sujun Fang, Don Ma}
+\title{Cognitive Workload Allocation Under Uncertainty}
+\subtitle{A Stochastic Multiple Knapsack Approach with Workload-Dependent Returns}
+\author{Don Ma, Sujun Fang}
 \date{February 2026}
 
 \begin{document}
@@ -77,6 +73,20 @@
 \end{frame}
 
 \section{Background}
+
+\begin{frame}{Cognitive Overload, Burnout}
+	\begin{itemize}
+		\item Cognitive overload from excessive demands leads to billions of lost working
+			days annually \citep{Robinson2024}.
+		\item Productivity depends on \textbf{attention management} rather than rigid time
+			scheduling \citep{Grant2019}.
+		\item Traditional time management fails because it ignores the finite nature
+			of human lifespan and cognitive capacity \citep{Hart2024}.
+		\item Chronic illness, burnout risk, and work-family conflict underscore the
+			need for systematic resource allocation that accounts for well-being
+			\citep{cook_individual_2024, yoo_critical_2022}.
+	\end{itemize}
+\end{frame}
 
 \begin{frame}{Motivation}
 	\begin{itemize}
@@ -248,18 +258,43 @@
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{Cognitive Overload, Burnout, and Motivation}
-	\begin{itemize}
-		\item Cognitive overload from excessive demands leads to billions of lost working
-			days annually \citep{Robinson2024}.
-		\item Productivity depends on \textbf{attention management} rather than rigid time
-			scheduling \citep{Grant2019}.
-		\item Traditional time management fails because it ignores the finite nature
-			of human lifespan and cognitive capacity \citep{Hart2024}.
-		\item Chronic illness, burnout risk, and work-family conflict underscore the
-			need for systematic resource allocation that accounts for well-being
-			\citep{cook_individual_2024, yoo_critical_2022}.
-	\end{itemize}
+\section{Solution Approaches}
+
+% -------------------------
+% Slide: Possible solution methodology
+% -------------------------
+\begin{frame}{Possible solution methodology}
+\begin{itemize}
+  \item \textbf{Benders decomposition:}
+  \begin{itemize}
+    \item \emph{Master problem:} choose task selection and assignment decisions $x_{ij}\in\{0,1\}$.
+    \item \emph{Subproblems:} for each agent/scenario, compute overload/risk and generate Benders cuts.
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+% =========================================================
+% Slide: Possible expected results
+% -------------------------
+\begin{frame}{Possible expected results}
+\begin{itemize}
+  \item \textbf{R1: Return-Risk trade-off.}
+  \begin{itemize}
+    \item As risk tolerance $\alpha$ decreases, optimal expected return decreases, while overload violation rate drops sharply.
+  \end{itemize}
+
+  \item \textbf{R2: Allocation pattern changes.}
+  \begin{itemize}
+    \item Tighter $\alpha$ makes the system more distributed: tasks are spread across agents to avoid single-point overload.
+    \item Fewer tasks with high variance / highly uncertain durations are selected.
+  \end{itemize}
+
+  \item \textbf{R3: Impact of stress-performance dependence.}
+  \begin{itemize}
+    \item If $R_{ij}=g_{ij}(S_{ij})+\varepsilon$ and $g_{ij}$ decreases under high workload, the optimal policy avoids near-capacity assignments more aggressively.
+  \end{itemize}
+\end{itemize}
 \end{frame}
 
 \section{Takeaways}
