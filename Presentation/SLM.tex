@@ -38,7 +38,9 @@
 		\fill[SLMAccent] ([xshift=1.8cm]current page.south west) rectangle ([xshift=2.1cm]current page.north west);
 	\end{tikzpicture}
 	\vspace*{1.2cm}
-	\begin{flushleft}
+	\hspace*{2.5cm}%
+	\begin{minipage}{\dimexpr\textwidth-2.5cm\relax}
+		\centering
 		{\usebeamerfont{title}\color{SLMDark}\inserttitle}\par
 		\vspace{0.2cm}
 		{\usebeamerfont{subtitle}\color{SLMBlue}\insertsubtitle}\par
@@ -46,7 +48,7 @@
 		{\usebeamerfont{author}\color{SLMDark}\insertauthor}\par
 		\vspace{0.2cm}
 		{\usebeamerfont{date}\color{SLMDark}\insertdate}\par
-	\end{flushleft}
+	\end{minipage}
 }
 
 \AtBeginSection[]{
@@ -61,7 +63,7 @@
 
 \title{Sustainable Life Management}
 \subtitle{State Dependent Resource Allocation Under Uncertainty}
-\author{Anonymous for Review}
+\author{Sujun Fang, Don Ma}
 \date{February 2026}
 
 \begin{document}
@@ -87,48 +89,176 @@
 \section{Problem Formulation}
 
 \begin{frame}{Problem Setting}
+	Within a finite planning horizon, a team assigns tasks across multiple agents.
 	\begin{itemize}
-		\item Tasks are items, agents are knapsacks with capacities $C_j$.
-		\item Task to agent assignments face stochastic sizes $S_{ij}$ and returns $R_{ij}$.
-		\item Overload is controlled by chance constraints on capacity violations.
+		\item Each agent has limited time, cognitive capacity, and attention ($C_j$).
+		\item Task $i$ assigned to agent $j$ consumes stochastic size $S_{ij}$ (realized effort).
+		\item The realized return $R_{ij}$ (utility) is also stochastic; it may depend on $S_{ij}$ through
+		\[
+			R_{ij} = g_{ij}(S_{ij}) + \varepsilon_{ij}, \quad \E[\varepsilon_{ij}] = 0.
+		\]
+		\item Deeper engagement can increase value, whereas overload may reduce returns.
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{Stochastic Multiple Knapsack}
-	\begin{align*}
-		\max \quad & \sum_{i \in \mathcal{I}} \sum_{j \in \mathcal{J}} \E\left[R_{ij}\right] x_{ij} \\
-		\text{s.t.} \quad & \sum_{j \in \mathcal{J}} x_{ij} \leq 1 \quad \forall i \in \mathcal{I} \\
-		& \Prob\left(\sum_{i \in \mathcal{I}} S_{ij} x_{ij} \leq C_j\right) \geq 1 - \epsilon_j \quad \forall j \in \mathcal{J}.
-	\end{align*}
-	\vspace{0.2cm}
-	\small{Sizes and returns can be correlated, and risk is limited through chance constraints.}
+\begin{frame}{Sets, Variables, and Parameters}
+	\begin{columns}[T]
+		\begin{column}{0.48\textwidth}
+			\textbf{Sets and indices}
+			\begin{itemize}
+				\item Tasks $i \in \mathcal{I} := \{1,\dots,N\}$
+				\item Agents $j \in \mathcal{J} := \{1,\dots,M\}$
+			\end{itemize}
+			\vspace{0.3cm}
+			\textbf{Decision variables}
+			\[
+				x_{ij} =
+				\begin{cases}
+					1, & \text{task } i \to \text{agent } j\\
+					0, & \text{otherwise}
+				\end{cases}
+			\]
+		\end{column}
+		\begin{column}{0.48\textwidth}
+			\textbf{Stochastic characteristics}
+			\begin{itemize}
+				\item $S_{ij}$: stochastic size (effort/attention)
+				\item $R_{ij}$: stochastic return (utility/value)
+			\end{itemize}
+			\vspace{0.3cm}
+			\textbf{Capacity and risk}
+			\begin{itemize}
+				\item $C_j > 0$: agent capacity
+				\item $\alpha \in (0,1)$: risk tolerance
+			\end{itemize}
+		\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Stochastic Multiple Knapsack Formulation}
+	\begin{align}
+		\max_{x} \quad
+		& \sum_{j\in\mathcal{J}}\sum_{i\in\mathcal{I}} \E\!\left[ R_{ij} \right] x_{ij}
+		\tag{Obj}\label{eq:obj}\\[4pt]
+		\text{s.t.}\quad
+		& \sum_{j\in\mathcal{J}} x_{ij} \le 1,
+		&& \forall i\in\mathcal{I}
+		\tag{Assign}\label{eq:assign}\\[4pt]
+		& \Prob\!\left(
+		\sum_{i\in\mathcal{I}} S_{ij}\, x_{ij} \le C_j
+		\right) \ge 1-\alpha,
+		&& \forall j\in\mathcal{J}
+		\tag{Chance}\label{eq:chance}\\[4pt]
+		& x_{ij}\in\{0,1\},
+		&& \forall i,j.
+		\tag{Binary}\label{eq:binary}
+	\end{align}
+	\vspace{0.15cm}
+	\small{\eqref{eq:chance} operationalizes cognitive/attention limits via chance constraints.
+	Dependence between $S_{ij}$ and $R_{ij}$ captures workload-dependent productivity.}
 \end{frame}
 
 \section{Visual Intuition}
 
 \begin{frame}{Multiple Knapsack Structure}
 	\centering
-	\includegraphics[width=0.9\textwidth]{mkp_structure.pdf}
+	\includegraphics[width=0.7\textwidth]{mkp_structure.pdf}\par
 	\vspace{0.2cm}
-	\small{Agents are knapsacks, tasks are items, colors indicate task categories.}
+	\begin{minipage}{0.7\textwidth}
+		\selectfont\tiny Bipartite assignment: tasks (left) are assigned to agents (right) with
+				capacities $C_j$.  Edge width encodes task size $\E[S_{ij}]$ and color
+				indicates expected return $\E[R_{ij}]$.  Each task is assigned to at most
+				one agent (constraint~\ref{eq:assign}).
+	\end{minipage}
 \end{frame}
 
 \begin{frame}{Stochastic Sizes and Returns}
 	\centering
-	\includegraphics[width=0.9\textwidth]{mkp_stochastic.pdf}
+	\includegraphics[width=0.7\textwidth]{mkp_stochastic.pdf}\par
 	\vspace{0.2cm}
-	\small{Each task has uncertain size and return with visible dispersion.}
+	\begin{minipage}{0.7\textwidth}
+		\selectfont\tiny Stochastic extensions: each assignment edge shows multiple scenario
+		realizations of size $S_{ij}$ (line width) and return $R_{ij}$ (annotation).
+		The chance constraint~\eqref{eq:chance} limits the probability that total
+		realized load exceeds agent capacity.
+	\end{minipage}
 \end{frame}
 
 \section{Methodological Context}
 
-\begin{frame}{Related Methods}
+\begin{frame}{Stochastic Knapsack: Cutting Planes and Dominance}
 	\begin{itemize}
-		\item Scenario based cuts for stochastic knapsack \citep{büyüktahtakın_scenario_2023}.
-		\item Distributionally robust knapsack formulations \citep{bos_distributionally_2024, ding_balancing_2022}.
-		\item Sample average approximation for two stage programs \citep{chen_sample_2022}.
-		\item Learning accelerated L shaped heuristics \citep{larsen_fast_2024}.
-		\item Stochastic assignment in project settings \citep{rezaeian_assignment_2024}.
+		\item \citet{büyüktahtakın_scenario_2023} derive \textbf{scenario dominance cuts} for multi-stage
+			stochastic MIPs applied to the dynamic multi-dimensional knapsack.
+			Strong dominance cuts reduce solution time with 0.06\% average deviation
+			from optimality.
+		\item \citet{büyüktahtakın_stage_2022} generalize this via \textbf{Stage-$t$ Scenario Dominance}
+			for risk-averse (mean-CVaR) knapsack problems, achieving one-to-two
+			orders of magnitude speedup.
+		\item \citet{joung_comparative_2023} compare LP relaxation bounds for the robust knapsack
+			problem and show that extended formulations yield identical bounds.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Distributionally Robust and Risk-averse Knapsack}
+	\begin{itemize}
+		\item \citet{bos_distributionally_2024} approximate the stochastic knapsack with periodic
+			scheduled arrivals using \textbf{Wasserstein DRO}, producing robust healthcare
+			surgical schedules.
+		\item \citet{ding_balancing_2022} propose a target-based DRO knapsack with
+			\textbf{uncertain profit and capacity}, reformulated as a second-order conic program.
+		\item \citet{merzifonluoglu_risk_2021} study the \textbf{risk-averse static stochastic knapsack}
+			with CVaR and mean-standard deviation objectives, deriving efficient
+			heuristics for normally distributed resource consumption.
+		\item \citet{boonstra_robust_2025} solve a robust multi-item newsvendor with budget
+			constraint using a greedy knapsack algorithm under moment ambiguity.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Solution Algorithms for Stochastic Programs}
+	\begin{itemize}
+		\item \citet{chen_sample_2022} analyze \textbf{sample average approximation} for two-stage
+			programs without complete recourse, proving exponential convergence of
+			recourse likelihood.
+		\item \citet{larsen_fast_2024} accelerate L-shaped methods via \textbf{supervised ML},
+			solving stochastic multi-knapsack instances in 20\% of the time with
+			less than 0.1\% optimality gap.
+		\item \citet{lefebvre_adjustable_2024} reformulate adjustable robust optimization with
+			\textbf{discrete uncertainty} and apply branch-and-cut to the multiple
+			knapsack problem with uncertain weights.
+		\item \citet{lyu_stochastic_2022} unify responsive, adaptive, and anticipative allocation
+			policies for the stochastic knapsack through \textbf{persistency values}.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Assignment, Scheduling, and Workforce Planning}
+	\begin{itemize}
+		\item \citet{rezaeian_assignment_2024} model the \textbf{stochastic assignment of projects} to
+			managers via multi-stage stochastic integer programming with heuristic
+			algorithms for large instances.
+		\item \citet{nasirian_multiskilled_2025} solve multiskilled workforce staffing and scheduling
+			via \textbf{logic-based Benders decomposition}, achieving 29x speedup over
+			direct MILP solving.
+		\item \citet{cavagnini_workforce_2020} use two-stage stochastic programming for production
+			planning under \textbf{uncertain learning rates}, with insights on
+			cross-training and worker assignment.
+		\item \citet{novak_scheduling_2022} connect stochastic parallel machine scheduling to an
+			\textbf{inflatable stochastic knapsack} pricing subproblem within
+			branch-and-price.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Cognitive Overload, Burnout, and Motivation}
+	\begin{itemize}
+		\item Cognitive overload from excessive demands leads to billions of lost working
+			days annually \citep{Robinson2024}.
+		\item Productivity depends on \textbf{attention management} rather than rigid time
+			scheduling \citep{Grant2019}.
+		\item Traditional time management fails because it ignores the finite nature
+			of human lifespan and cognitive capacity \citep{Hart2024}.
+		\item Chronic illness, burnout risk, and work-family conflict underscore the
+			need for systematic resource allocation that accounts for well-being
+			\citep{cook_individual_2024, yoo_critical_2022}.
 	\end{itemize}
 \end{frame}
 
@@ -136,9 +266,18 @@
 
 \begin{frame}{Key Takeaways}
 	\begin{itemize}
-		\item The formulation unifies cognitive resource allocation with stochastic knapsack structure.
-		\item Chance constraints control overload risk while retaining assignment flexibility.
-		\item Decomposition and data driven methods are a natural fit for scaling the model.
+		\item The formulation models cognitive resource allocation as a
+			\textbf{multiple knapsack problem with stochastic sizes and returns},
+			capturing workload-dependent productivity via $R_{ij} = g_{ij}(S_{ij}) + \varepsilon_{ij}$.
+		\item Chance constraints operationalize cognitive/attention limits,
+			controlling overload risk while retaining assignment flexibility.
+		\item Scenario dominance cuts \citep{büyüktahtakın_scenario_2023},
+			DRO reformulations \citep{bos_distributionally_2024, ding_balancing_2022},
+			and ML-accelerated decomposition \citep{larsen_fast_2024} are natural
+			tools for scaling the model to organizational settings.
+		\item Data-driven SAA \citep{chen_sample_2022} and risk-averse objectives
+			\citep{merzifonluoglu_risk_2021} provide robust solution strategies
+			under limited distributional information.
 	\end{itemize}
 \end{frame}
 
