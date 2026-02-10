@@ -27,4 +27,62 @@ The planner chooses binary assignment decisions $x_{ij}\in\{0,1\}$, indicating w
 This formulation captures three features of cognitive work allocation: (i) agents with different capacities and task efficiencies, (ii) uncertain time/attention requirements that drive schedule overruns and stress, and (iii) uncertain and workload-dependent returns that reflect variable productivity under cognitive constraints. This problem generalizes classical deterministic multiple knapsack models by introducing stochastic sizes and stochastic returns with operationalizing cognitive/attention limits via constraints.
 
 
+
+
+\section*{Model}
+
+\subsection*{Sets and Indices}
+Tasks are indexed by $i \in \mathcal{I} := \{1,\dots,N\}$ and agents are indexed by $j \in \mathcal{J} := \{1,\dots,M\}$.
+
+\subsection*{Decision Variables}
+\[
+x_{ij} =
+\begin{cases}
+1, & \text{if task } i \text{ is assigned to agent } j,\\
+0, & \text{otherwise.}
+\end{cases}
+\]
+
+\subsection*{Stochastic Task Characteristics}
+For each task--agent pair $(i,j)$:
+\begin{itemize}
+\item $S_{ij}$ denotes the \emph{stochastic size} (realized time/effort/attention usage) required for agent $j$ to complete task $i$.
+\item $R_{ij}$ denotes the \emph{stochastic return} (realized utility/value) obtained if agent $j$ completes task $i$.
+\end{itemize}
+
+We allow dependence between $S_{ij}$ and $R_{ij}$ to capture stress--performance effects. A convenient representation is
+\[
+R_{ij} \;=\; g_{ij}(S_{ij}) + \varepsilon_{ij},
+\]
+where $g_{ij}(\cdot)$ is a function that maps the realized workload $S_{ij}$ to the systematic component of the return for task $i$ performed by agent $j$, and $\varepsilon_{ij}$ is an idiosyncratic shock with $\mathbb{E}[\varepsilon_{ij}]=0$.
+
+
+
+\subsection*{Capacities and Risk Parameter}
+Each agent $j$ has a capacity $C_j>0$ over the planning horizon (e.g., available time and cognitive/attention budget). Let $\alpha \in (0,1)$ be a risk tolerance parameter controlling the allowable overload probability.
+
+\subsection*{Optimization Problem}
+The planner chooses assignments to maximize expected total utility subject to assignment feasibility and overload-risk control:
+\begin{align}
+\max_{x} \quad
+& \sum_{j\in\mathcal{J}}\sum_{i\in\mathcal{I}} \mathbb{E}\!\left[ R_{ij} \right] x_{ij}
+\label{eq:obj}\\[4pt]
+\text{s.t.}\quad
+& \sum_{j\in\mathcal{J}} x_{ij} \le 1,
+&& \forall i\in\mathcal{I}
+\label{eq:assign}\\[4pt]
+& \mathbb{P}\!\left(
+\sum_{i\in\mathcal{I}} S_{ij} x_{ij} \le C_j
+\right) \ge 1-\alpha,
+&& \forall j\in\mathcal{J}
+\label{eq:chance}\\[4pt]
+& x_{ij}\in\{0,1\},
+&& \forall i\in\mathcal{I},\ \forall j\in\mathcal{J}.
+\label{eq:binary}
+\end{align}
+
+\subsection*{Remarks}
+Model \eqref{eq:obj}--\eqref{eq:binary} is a multiple knapsack formulation with \emph{stochastic sizes} and \emph{stochastic returns}. Constraint \eqref{eq:chance} operationalizes cognitive/attention limits via a chance constraint, and the dependence between $S_{ij}$ and $R_{ij}$ allows the model to capture workload-dependent productivity.
+
+
 \end{document}
