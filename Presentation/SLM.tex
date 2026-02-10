@@ -1,0 +1,152 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usetheme{Boadilla}
+\usepackage{lmodern}
+\usepackage{helvet}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{natbib}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+
+\definecolor{SLMBlue}{HTML}{1F4E5F}
+\definecolor{SLMAccent}{HTML}{E09F3E}
+\definecolor{SLMLight}{HTML}{F7F3E8}
+\definecolor{SLMDark}{HTML}{0B1D26}
+
+\setbeamercolor{structure}{fg=SLMBlue}
+\setbeamercolor{frametitle}{fg=SLMDark}
+\setbeamercolor{title}{fg=SLMDark}
+\setbeamercolor{itemize item}{fg=SLMAccent}
+\setbeamercolor{itemize subitem}{fg=SLMAccent}
+\setbeamercolor{block title}{fg=SLMDark,bg=SLMLight}
+\setbeamercolor{block body}{bg=SLMLight}
+
+\setbeamertemplate{navigation symbols}{}
+
+\setbeamertemplate{title page}{
+	\begin{tikzpicture}[remember picture,overlay]
+		\fill[SLMLight] (current page.south west) rectangle (current page.north east);
+		\fill[SLMBlue] (current page.south west) rectangle ([xshift=1.8cm]current page.north west);
+		\fill[SLMAccent] ([xshift=1.8cm]current page.south west) rectangle ([xshift=2.1cm]current page.north west);
+	\end{tikzpicture}
+	\vspace*{1.2cm}
+	\begin{flushleft}
+		{\usebeamerfont{title}\color{SLMDark}\inserttitle}\par
+		\vspace{0.2cm}
+		{\usebeamerfont{subtitle}\color{SLMBlue}\insertsubtitle}\par
+		\vspace{0.6cm}
+		{\usebeamerfont{author}\color{SLMDark}\insertauthor}\par
+		\vspace{0.2cm}
+		{\usebeamerfont{date}\color{SLMDark}\insertdate}\par
+	\end{flushleft}
+}
+
+\AtBeginSection[]{
+	\begin{frame}[plain]
+		\vfill
+		\begin{center}
+			{\usebeamerfont{title}\color{SLMBlue}\insertsection}
+		\end{center}
+		\vfill
+	\end{frame}
+}
+
+\title{Sustainable Life Management}
+\subtitle{State Dependent Resource Allocation Under Uncertainty}
+\author{Anonymous for Review}
+\date{February 2026}
+
+\begin{document}
+
+\begin{frame}[plain]
+	\titlepage
+\end{frame}
+
+\begin{frame}{Agenda}
+	\tableofcontents
+\end{frame}
+
+\section{Background}
+
+\begin{frame}{Motivation}
+	\begin{itemize}
+		\item Cognitive overload and limited attention make time allocation fragile \citep{Robinson2024, Grant2019}.
+		\item Sustainable planning needs explicit tradeoffs under finite time \citep{Hart2024}.
+		\item Team settings add coordination and capacity coupling across agents.
+	\end{itemize}
+\end{frame}
+
+\section{Problem Formulation}
+
+\begin{frame}{Problem Setting}
+	\begin{itemize}
+		\item Tasks are items, agents are knapsacks with capacities $C_j$.
+		\item Task to agent assignments face stochastic sizes $S_{ij}$ and returns $R_{ij}$.
+		\item Overload is controlled by chance constraints on capacity violations.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Stochastic Multiple Knapsack}
+	\begin{align*}
+		\max \quad & \sum_{i \in \mathcal{I}} \sum_{j \in \mathcal{J}} \E\left[R_{ij}\right] x_{ij} \\
+		\text{s.t.} \quad & \sum_{j \in \mathcal{J}} x_{ij} \leq 1 \quad \forall i \in \mathcal{I} \\
+		& \Prob\left(\sum_{i \in \mathcal{I}} S_{ij} x_{ij} \leq C_j\right) \geq 1 - \epsilon_j \quad \forall j \in \mathcal{J}.
+	\end{align*}
+	\vspace{0.2cm}
+	\small{Sizes and returns can be correlated, and risk is limited through chance constraints.}
+\end{frame}
+
+\section{Visual Intuition}
+
+\begin{frame}{Multiple Knapsack Structure}
+	\centering
+	\includegraphics[width=0.9\textwidth]{mkp_structure.pdf}
+	\vspace{0.2cm}
+	\small{Agents are knapsacks, tasks are items, colors indicate task categories.}
+\end{frame}
+
+\begin{frame}{Stochastic Sizes and Returns}
+	\centering
+	\includegraphics[width=0.9\textwidth]{mkp_stochastic.pdf}
+	\vspace{0.2cm}
+	\small{Each task has uncertain size and return with visible dispersion.}
+\end{frame}
+
+\section{Methodological Context}
+
+\begin{frame}{Related Methods}
+	\begin{itemize}
+		\item Scenario based cuts for stochastic knapsack \citep{büyüktahtakın_scenario_2023}.
+		\item Distributionally robust knapsack formulations \citep{bos_distributionally_2024, ding_balancing_2022}.
+		\item Sample average approximation for two stage programs \citep{chen_sample_2022}.
+		\item Learning accelerated L shaped heuristics \citep{larsen_fast_2024}.
+		\item Stochastic assignment in project settings \citep{rezaeian_assignment_2024}.
+	\end{itemize}
+\end{frame}
+
+\section{Takeaways}
+
+\begin{frame}{Key Takeaways}
+	\begin{itemize}
+		\item The formulation unifies cognitive resource allocation with stochastic knapsack structure.
+		\item Chance constraints control overload risk while retaining assignment flexibility.
+		\item Decomposition and data driven methods are a natural fit for scaling the model.
+	\end{itemize}
+\end{frame}
+
+\section{References}
+
+\begin{frame}[allowframebreaks]{References}
+	\bibliographystyle{plainnat}
+	\bibliography{../literature/reference,../Formulation/Literature/SImilar40/knapsack_20260209_165848}
+\end{frame}
+
+\end{document}
