@@ -201,9 +201,10 @@
 	\]}
 	\onslide<3->{%
 	\vspace{-0.35cm}
-	\[\text{s.t.} \quad \sum_{j} x_{ij} \leq 1,
-		\quad \forall i \quad \text{(Assign)}\label{eq:assign}
-	\]}
+	\begin{equation}\tag{Assign}\label{eq:assign}
+		\text{s.t.} \quad \sum_{j} x_{ij} \leq 1,
+		\quad \forall i
+	\end{equation}}
 	\onslide<4->{%
 	\vspace{-0.35cm}
 	\[\sum_{i} S_{ij}^\omega\, x_{ij}
@@ -212,9 +213,10 @@
 	\]}
 	\onslide<5->{%
 	\vspace{-0.35cm}
-	\[\sum_{\omega \in \Omega} p_\omega\, y_j^\omega \leq \alpha,
-		\quad \forall j \quad \text{(Chance)}\label{eq:chance}
-	\]}
+	\begin{equation}\tag{Chance}\label{eq:chance}
+		\sum_{\omega \in \Omega} p_\omega\, y_j^\omega \leq \alpha,
+		\quad \forall j
+	\end{equation}}
 	\onslide<6->{%
 	\vspace{-0.35cm}
 	\[U_j = \tfrac{1}{C_j}\textstyle\sum_{i}\sum_{\omega \in \Omega}
@@ -242,7 +244,7 @@
 		\selectfont\tiny Bipartite assignment: tasks (left) are assigned to agents (right) with
 				capacities $C_j$.  Edge width encodes task size $\E[S_{ij}]$ and color
 				indicates expected return $R_{ij}$.  Each task is assigned to at most
-				one agent (constraint~\ref{eq:assign}).
+				one agent~\eqref{eq:assign}.
 	\end{minipage}
 \end{frame}
 
@@ -398,11 +400,11 @@
 \begin{frame}{Master Problem (Iteration $t$)}
 	Let $\mathcal{B}^t$ denote the set of feasibility cuts generated so far.
 	\onslide<1->{%
-	\[\max_{x,U,Z} \quad
+	\begin{equation}\tag{MP-Obj}\label{eq:mp-obj}
+		\max_{x,U,Z} \quad
 		\sum_{j}\sum_{i} R_{ij}\, x_{ij}
 		\;-\; \lambda\, Z
-		\quad \text{(MP-Obj)}\label{eq:mp-obj}
-	\]}
+	\end{equation}}
 	\onslide<2->{%
 	\vspace{-0.5cm}
 	\[\text{s.t.} \quad \sum_{j} x_{ij} \leq 1,
@@ -484,7 +486,7 @@
 	many iterations because it eliminates only one assignment at a time.}
 \end{frame}
 
-\begin{frame}{Feasibility Cut Generation: Stronger Cut}
+\begin{frame}[shrink=5]{Feasibility Cut Generation: Stronger Cut}
 	The stronger cut targets the \textbf{root cause} of the violation.
 	\begin{itemize}
 		\item<1-> Within the full bundle $\mathcal{I}_j(\bar{x})$, identify a
@@ -516,12 +518,11 @@
 	\end{block}}
 \end{frame}
 
-\begin{frame}{No-Good vs.\ Stronger Cut: Comparison}
+\begin{frame}[shrink=5]{No-Good vs.\ Stronger Cut: Comparison}
 	\onslide<1->{%
 	\textbf{Example.} Agent $j$ is assigned tasks $\{1,2,3\}$ and violates the
 	chance constraint. Suppose tasks $\{1,3\}$ alone already cause violation.}
-	\vspace{0.15cm}
-	\begin{itemize}
+	\begin{itemize}\small
 		\item<2-> \textbf{No-good cut} forbids $\{1,2,3\}$ together:
 			$x_{1j} + x_{2j} + x_{3j} \leq 2$. \\
 			The master can still assign $\{1,3\}$ to $j$, which is also
@@ -532,7 +533,6 @@
 			bundle containing the offending pair.
 	\end{itemize}
 	\onslide<4->{%
-	\vspace{0.1cm}
 	\begin{center}
 	\small
 	\begin{tabular}{lcc}
