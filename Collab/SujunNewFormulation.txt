@@ -1,0 +1,486 @@
+1
+
+Model
+
+We consider a team task-allocation problem over a finite planning horizon. A planner must assign
+a set of tasks to a set of agents. Let I denote the set of tasks and let J denote the set of agents.
+Each task i ∈ I can be assigned to at most one agent j ∈ J. The planner’s decision is therefore not
+only whether a task should be carried out, but also which agent should perform it.
+When task i is assigned to agent j, it produces a return and consumes workload. We let Rij denote
+the expected return generated when agent j performs task i. This return may reflect the value
+created by completing the task, such as productivity gains, service value, or project contribution.
+We also let Sij denote the random workload required when agent j performs task i. This workload
+can represent uncertain time, effort, attention, or cognitive demand. The same task may therefore
+lead to different expected returns and different workload realizations depending on the assigned
+agent.
+Each agent j ∈ J has a limited workload capacity, denoted by Cj . This capacity represents the
+maximum amount of work that the agent can reasonably handle during the planning horizon.
+Since actual workload is uncertain, a task assignment that looks acceptable in expectation may
+still overload an agent in some realizations. For this reason, the planner does not require workload
+feasibility in every possible realization. Instead, the planner allows a small probability of overload.
+Let α ∈ (0, 1) denote the maximum allowable overload probability for each agent. A smaller value
+of α means that the planner is more conservative and places more emphasis on protecting agents
+from overload risk.
+In addition to controlling overload risk, the planner also wants to avoid highly uneven workload
+allocations across agents. A task assignment that places too much work on one agent and too little
+on another may increase fatigue, reduce sustainability, and create operational imbalance, even if
+the total expected return is high. To capture this idea, the model includes a workload-balance term
+in the objective function. Let λ ≥ 0 denote the weight placed on workload imbalance. When λ is
+larger, the planner places more importance on balancing workload across agents. When λ = 0, the
+planner only maximizes return subject to the chance constraints.
+To represent workload uncertainty, we approximate the random workload by a finite set of scenarios.
+Let Ω denote the set of workload scenarios, and let ω ∈ Ω index a scenario. For each scenario ω,
+let pω denote its probability, where
+X
+
+pω = 1.
+
+(1)
+
+ω∈Ω
+ω denote the realized workload of task i for
+For each task-agent pair (i, j) and scenario ω, let Sij
+
+agent j under scenario ω.
+
+1
+
+The planner’s main assignment decision is represented by the binary variable
+
+xij =
+
+
+1,
+
+if task i is assigned to agent j,
+
+0,
+
+otherwise,
+
+∀i ∈ I, ∀j ∈ J.
+
+(2)
+
+Because each task can be assigned to at most one agent, the model will require
+X
+
+xij ≤ 1,
+
+∀i ∈ I.
+
+(3)
+
+j∈J
+
+To implement the chance constraint in a scenario-based form, we introduce another binary variable:
+
+yjω =
+
+
+1,
+
+if agent j is allowed to violate capacity in scenario ω,
+
+0,
+
+otherwise,
+
+∀j ∈ J, ∀ω ∈ Ω.
+
+(4)
+
+This variable allows the model to mark a scenario as a violating scenario for agent j. However, the
+total probability of such violating scenarios must remain small. Specifically, the model will require
+the total probability of scenarios with yjω = 1 to be no larger than α for each agent.
+To measure how heavily each agent is loaded relative to that agent’s own capacity, we define the
+expected workload utilization of agent j by
+
+
+
+
+1 XX
+ω
+Uj =
+pω Sij
+xij ,
+Cj i∈I ω∈Ω
+
+∀j ∈ J.
+
+(5)
+
+Here, Uj is the expected workload assigned to agent j, normalized by the agent’s capacity Cj . This
+normalization is useful because agents may have different capacities, so absolute workload levels
+alone may not provide a fair comparison.
+To measure imbalance across agents, we introduce a nonnegative variable Z to represent the maximum pairwise difference in expected workload utilization. More precisely, Z is defined through the
+constraints
+Uj − Uk ≤ Z,
+
+∀j ∈ J, ∀k ∈ J.
+
+(6)
+
+Since these inequalities hold for all ordered pairs (j, k), the variable Z becomes an upper bound
+on the largest utilization gap across agents. A smaller value of Z therefore means a more balanced
+workload allocation.
+
+2
+
+Using the notation defined above, the planner solves the following optimization problem:
+max
+
+x,y,U,Z
+
+s.t.
+
+XX
+
+Rij xij − λZ
+
+(7)
+
+j∈J i∈I
+
+X
+
+xij ≤ 1,
+
+∀i ∈ I
+
+(8)
+
+j∈J
+
+X
+
+ω
+xij ≤ Cj + M yjω ,
+Sij
+
+∀j ∈ J, ∀ω ∈ Ω
+
+(9)
+
+i∈I
+
+X
+
+pω yjω ≤ α,
+
+∀j ∈ J
+
+
+
+
+
+(10)
+
+ω∈Ω
+
+1 XX
+ω
+pω Sij
+xij ,
+Uj =
+Cj i∈I ω∈Ω
+
+∀j ∈ J
+
+(11)
+
+Uj − Uk ≤ Z,
+
+∀j ∈ J, ∀k ∈ J
+
+(12)
+
+xij ∈ {0, 1},
+
+∀i ∈ I, ∀j ∈ J
+
+(13)
+
+yjω ∈ {0, 1},
+
+∀j ∈ J, ∀ω ∈ Ω
+
+(14)
+
+Uj ≥ 0,
+
+∀j ∈ J
+
+Z ≥ 0.
+
+(15)
+(16)
+
+In this formulation, the objective function in (7) maximizes total expected return while penalizing
+workload imbalance. The first term measures the total expected value created by the task assignment. The second term penalizes large differences in expected workload utilization across agents.
+Constraint (8) ensures that each task is assigned to at most one agent. Constraint (9) imposes
+workload feasibility in each scenario unless that scenario is explicitly marked as a violating scenario
+through yjω = 1. Constraint (10) limits the total probability of violating scenarios for each agent,
+which is the scenario-based implementation of the chance constraint. Constraint (11) defines the
+expected workload utilization of each agent, and constraint (12) links these utilization levels to the
+imbalance variable Z. Finally, constraints (13)–(16) define the domains of the decision variables.
+The planner assigns tasks to agents. Those assignments determine both expected return and
+uncertain workload outcomes. The uncertain workload outcomes then determine whether each
+agent remains within capacity with sufficiently high probability. At the same time, the assignment
+also determines how evenly work is distributed across agents. The optimal solution therefore
+balances three forces: return creation, overload-risk control, and workload fairness.
+
+2
+
+Solution Methodology
+
+The compact formulation in Section 1 can be solved directly by a mixed-integer solver for small and
+medium-sized instances. However, when the numbers of tasks, agents, and scenarios become large,
+the scenario-based chance constraints become the main computational bottleneck. In particular, the
+3
+
+formulation introduces one binary variable for each agent-scenario pair and one workload constraint
+for each agent-scenario pair. To exploit the structure of the problem more effectively, we solve the
+model by a Benders decomposition.
+The workload-balance component depends only on expected workload and therefore can remain
+in the master problem. By contrast, the scenario-based chance-feasibility condition is naturally
+evaluated only after a candidate assignment has been fixed. This structure allows us to separate
+the assignment and balancing decisions from the scenario-based feasibility check.
+For convenience, we first define the expected workload coefficient
+S̄ij =
+
+X
+
+ω
+pω Sij
+,
+
+∀i ∈ I, ∀j ∈ J.
+
+(17)
+
+ω∈Ω
+
+Using (17), the expected workload utilization of agent j can be written as
+Uj =
+
+2.1
+
+1 X
+S̄ij xij ,
+Cj i∈I
+
+∀j ∈ J.
+
+(18)
+
+Master problem
+
+At iteration t, let B t denote the set of Benders feasibility cuts that have been generated so far. The
+master problem is
+max
+
+x,U,Z
+
+XX
+
+Rij xij − λZ
+
+(19)
+
+∀i ∈ I,
+
+(20)
+
+j∈J i∈I
+
+subject to
+X
+
+xij ≤ 1,
+
+j∈J
+
+1 X
+S̄ij xij ,
+Cj i∈I
+
+∀j ∈ J,
+
+(21)
+
+Uj − Uk ≤ Z,
+
+∀j ∈ J, ∀k ∈ J,
+
+(22)
+
+xij ∈ {0, 1},
+
+∀i ∈ I, ∀j ∈ J,
+
+(23)
+
+Uj =
+
+Uj ≥ 0,
+
+∀j ∈ J,
+
+(24)
+
+Z ≥ 0,
+
+(25)
+
+x ∈ Bt .
+
+(26)
+
+The master problem keeps the true objective function of the original model. It chooses a candidate
+assignment pattern and simultaneously evaluates the workload-balance term through the utilization
+variables Uj and the imbalance variable Z. The chance constraints are not imposed explicitly in the
+master problem. Instead, they are checked in a separate feasibility evaluation step after a candidate
+
+4
+
+assignment has been obtained.
+
+2.2
+
+Feasibility evaluation subproblem
+
+Suppose that the master problem returns a candidate assignment x̄ = {x̄ij }. For each agent j ∈ J
+and scenario ω ∈ Ω, the realized workload under x̄ is
+Lωj (x̄) =
+
+X
+
+ω
+Sij
+x̄ij ,
+
+∀j ∈ J, ∀ω ∈ Ω.
+
+(27)
+
+i∈I
+
+Given x̄, the smallest feasible value of the violation indicator in scenario ω for agent j is
+
+δjω (x̄) =
+
+
+1,
+
+if Lωj (x̄) > Cj ,
+
+0,
+
+if Lωj (x̄) ≤ Cj ,
+
+∀j ∈ J, ∀ω ∈ Ω.
+
+(28)
+
+Therefore, the total violation probability for agent j under assignment x̄ is
+Pjviol (x̄) =
+
+X
+
+pω δjω (x̄),
+
+∀j ∈ J.
+
+(29)
+
+ω∈Ω
+
+The candidate assignment x̄ is chance-feasible if and only if
+Pjviol (x̄) ≤ α,
+
+∀j ∈ J.
+
+(30)
+
+This feasibility check does not require solving another mixed-integer optimization model. Once x̄ is
+fixed, the realized workload in each scenario is known, and the violation probability of each agent
+can be computed directly from (27)–(30). For this reason, the subproblem in our decomposition is
+a logical feasibility checker rather than a separate optimization problem.
+
+2.3
+
+Feasibility cut generation
+
+If (30) holds for every agent, then x̄ is feasible for the original model, and the algorithm terminates
+with an optimal solution because the master problem already contains the exact objective function.
+If (30) is violated for some agent j, then the current assignment gives agent j too many tasks
+relative to the allowed overload probability. Let
+Ij (x̄) = {i ∈ I : x̄ij = 1}
+
+(31)
+
+denote the set of tasks assigned to agent j in the current candidate solution. A valid no-good
+
+5
+
+feasibility cut is
+X
+
+xij ≤ |Ij (x̄)| − 1.
+
+(32)
+
+i∈Ij (x̄)
+
+Constraint (32) prevents the master problem from assigning exactly the same bundle of tasks to
+the same infeasible agent again.
+In practice, a stronger cut can be obtained by identifying a smaller offending subset Bj (x̄) ⊆ Ij (x̄)
+such that
+X
+P
+
+ω∈Ω:
+
+pω > α.
+
+(33)
+
+S ω >Cj
+i∈Bj (x̄) ij
+
+If such a subset is available, then we add the stronger feasibility cut
+X
+
+xij ≤ |Bj (x̄)| − 1.
+
+(34)
+
+i∈Bj (x̄)
+
+Constraint (34) excludes the specific task combination that causes excessive overload risk for agent
+j, while leaving more flexibility for the master problem than (32).
+
+2.4
+
+Algorithmic procedure
+
+The overall solution procedure is iterative. We start with the master problem without any Benders
+feasibility cuts. At each iteration, we solve the master problem and obtain a candidate assignment
+x̄. We then evaluate the chance-feasibility of x̄ by computing the realized workload in every scenario
+and the resulting violation probability for each agent. If the candidate assignment is feasible, then
+it is optimal for the original problem. If the candidate assignment is infeasible, then we generate
+one or more feasibility cuts of the form (32) or (34), add them to the master problem, and solve
+the updated master problem again. The procedure continues until a chance-feasible assignment is
+found.
+This decomposition is attractive for two reasons. First, it keeps the true objective function and the
+workload-balance structure in the master problem, so every master solution is evaluated with respect
+to the exact return-balance trade-off. Second, it moves the scenario-based chance-feasibility check
+into a separate logical step, which avoids carrying all agent-scenario binary variables explicitly inside
+the main optimization model. As a result, the method remains closely aligned with the managerial
+logic of the problem: the planner first proposes an assignment, and then checks whether that
+assignment is sufficiently safe under workload uncertainty.
+
+6
+
+

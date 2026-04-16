@@ -1,0 +1,164 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{threeparttable}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{setspace}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{pdflscape}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue
+}
+
+\begin{document}
+
+\section{Test Instances and Data Design}
+Three instances are used in the computational study.
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Small instance}: 5 tasks, 3 agents, and 3 scenarios.
+    \item \textbf{Medium instance}: 10 tasks, 5 agents, and 5 scenarios.
+    \item \textbf{Large instance}: 25 tasks, 10 agents, and 10 scenarios.
+\end{itemize}
+
+
+\begin{table}[H]
+\centering
+\caption{Data Summary of Test Instances}
+\label{tab:data_summary}
+\begin{tabular}{lcccccll}
+\toprule
+Instance & Tasks & Agents & Scenarios & $\alpha$ & $\lambda$ & Capacity pattern \\
+\midrule
+Small  & 5  & 3  & 3  & 0.20 & 4.0 & [10, 10, 11]  \\
+Medium & 10 & 5  & 5  & 0.20 & 5.0 & [10, 9, 10, 9, 10]  \\
+Large  & 25 & 10 & 10 & 0.10 & 6.0 & [13, 13, 14, 13, 13, 14, 13, 13, 14, 13] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\section{Computational Results}
+\subsection{Overall summary}
+
+\begin{table}[H]
+\centering
+\caption{Computational Results Summary}
+\label{tab:results_summary}
+\begin{tabular}{lcccccc}
+\toprule
+Instance & Final objective & Total return & $Z$ & Iterations & Cuts added & Final Benders gap \\
+\midrule
+Small  & 51.4982  & 53.0000  & 0.3755 & 2   & 1    & 0.0000 \\
+Medium & 77.1139  & 79.0000  & 0.3772 & 52  & 220  & 0.0000 \\
+Large  & 254.3369 & 257.0000 & 0.4438 & 443 & 1958 & 0.0000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The results show a clear computational pattern. The small instance is solved after only two iterations and one feasibility cut. The medium instance is already much more demanding, requiring 52 iterations and 220 cuts. The large instance is the most expensive case, requiring 443 iterations and 1958 cuts. This confirms that the number of Benders iterations and the number of feasibility cuts increase substantially with instance size.
+
+\subsection{Small instance}
+The first master-optimal solution is infeasible because agent 1 is assigned an unsafe bundle. One feasibility cut excludes the offending subset, and the second iteration produces a feasible and optimal solution.
+
+\begin{table}[H]
+\centering
+\caption{Final Assignment and Utilization: Small Instance}
+\label{tab:small_assignment}
+\begin{tabular}{lll}
+\toprule
+Task & Assignment & Expected utilization by agent \\
+\midrule
+Task 1 & Agent 3 & Agent 1: 0.5700 \\
+Task 2 & Agent 2 & Agent 2: 0.9400 \\
+Task 3 & Agent 3 & Agent 3: 0.9455 \\
+Task 4 & Agent 2 &  \\
+Task 5 & Agent 1 &  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The final assignment groups tasks 1 and 3 with agent 3, tasks 2 and 4 with agent 2, and task 5 with agent 1. The workload imbalance is not negligible, but the solution satisfies the chance constraints and remains optimal with respect to the original objective.
+
+\subsection{Medium instance}
+The final solution does not assign all tasks. Tasks 1, 6, 8, and 9 are left unassigned, which indicates that under the current return, workload, and overload-risk settings, it is better to leave some tasks undone than to violate the chance constraints or create excessive imbalance.
+
+\begin{table}[H]
+\centering
+\caption{Final Assignment and Utilization: Medium Instance}
+\label{tab:medium_assignment}
+\begin{tabular}{lll}
+\toprule
+Task & Assignment & Expected utilization by agent \\
+\midrule
+Task 1  & Not assigned & Agent 1: 0.5450 \\
+Task 2  & Agent 2     & Agent 2: 0.6278 \\
+Task 3  & Agent 3     & Agent 3: 0.5450 \\
+Task 4  & Agent 4     & Agent 4: 0.9222 \\
+Task 5  & Agent 5     & Agent 5: 0.6450 \\
+Task 6  & Not assigned &  \\
+Task 7  & Agent 1     &  \\
+Task 8  & Not assigned &  \\
+Task 9  & Not assigned &  \\
+Task 10 & Agent 4     &  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The final solution uses all five agents but in a very uneven way. Agent 4 receives the heaviest expected load, while the other agents remain noticeably lighter. Even so, the overload-risk requirements are satisfied, and the final objective value is optimal for the model instance.
+
+\subsection{Large instance}
+The final solution leaves six tasks unassigned, namely tasks 5, 11, 12, 17, 23, and 24. Most agents receive two tasks, but agent 7 receives only one task. The workload pattern is therefore feasible but not perfectly balanced.
+
+\begin{table}[H]
+\centering
+\caption{Final Assignment and Utilization: Large Instance}
+\label{tab:large_assignment}
+\begin{tabular}{lll}
+\toprule
+Task & Assignment & Expected utilization by agent \\
+\midrule
+Task 1  & Agent 1      & Agent 1: 0.7862 \\
+Task 2  & Agent 2      & Agent 2: 0.7215 \\
+Task 3  & Agent 3      & Agent 3: 0.7300 \\
+Task 4  & Agent 4      & Agent 4: 0.7215 \\
+Task 5  & Not assigned & Agent 5: 0.7385 \\
+Task 6  & Agent 6      & Agent 6: 0.7469 \\
+Task 7  & Agent 7      & Agent 7: 0.3546 \\
+Task 8  & Agent 8      & Agent 8: 0.7477 \\
+Task 9  & Agent 9      & Agent 9: 0.7846 \\
+Task 10 & Agent 10     & Agent 10: 0.7554 \\
+Task 11 & Not assigned &  \\
+Task 12 & Not assigned &  \\
+Task 13 & Agent 3      &  \\
+Task 14 & Agent 4      &  \\
+Task 15 & Agent 5      &  \\
+Task 16 & Agent 6      &  \\
+Task 17 & Not assigned &  \\
+Task 18 & Agent 8      &  \\
+Task 19 & Agent 9      &  \\
+Task 20 & Agent 10     &  \\
+Task 21 & Agent 1      &  \\
+Task 22 & Agent 2      &  \\
+Task 23 & Not assigned &  \\
+Task 24 & Not assigned &  \\
+Task 25 & Agent 5      &  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The algorithm needs 443 iterations and 1958 feasibility cuts before convergence. This result demonstrates both the strength and the limitation of the current implementation: it can still find the optimum, but the explicit outer-loop Benders scheme becomes expensive when the instance is large and the chance constraints are tight.
+
+
+\end{document}
