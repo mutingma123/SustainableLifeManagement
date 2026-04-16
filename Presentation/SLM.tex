@@ -1,8 +1,6 @@
 \documentclass[aspectratio=169,11pt]{beamer}
 
 \usetheme{Boadilla}
-\usepackage{lmodern}
-\usepackage{helvet}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{amsmath}
@@ -11,8 +9,6 @@
 \usepackage{xcolor}
 \usepackage{natbib}
 \usepackage{array}
-
-\renewcommand{\familydefault}{\sfdefault}
 
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\Prob}{\mathbb{P}}
@@ -196,38 +192,37 @@
 \end{frame}
 
 \begin{frame}{Full Formulation}
-	\vspace{-0.2cm}
+	\vspace{-0.3cm}
 	\onslide<1->{%
-	\vspace{-0.2cm}
 	\[\max_{x,y,U,Z} \quad
 		\underbrace{\sum_{j}\sum_{i} R_{ij}\, x_{ij}}_{\text{total return}}
 		\onslide<2->{\;-\; \underbrace{\lambda\, Z}_{\text{balance penalty}}}
 		\quad \text{(Obj)}
 	\]}
 	\onslide<3->{%
-	\vspace{-0.5cm}
+	\vspace{-0.35cm}
 	\[\text{s.t.} \quad \sum_{j} x_{ij} \leq 1,
 		\quad \forall i \quad \text{(Assign)}\label{eq:assign}
 	\]}
 	\onslide<4->{%
-	\vspace{-0.5cm}
+	\vspace{-0.35cm}
 	\[\sum_{i} S_{ij}^\omega\, x_{ij}
 		\leq C_j + M\, y_j^\omega,
-		\quad \forall j,\omega \quad \text{(Cap)}
+		\quad \forall j,\; \forall \omega \in \Omega \quad \text{(Cap)}
 	\]}
 	\onslide<5->{%
-	\vspace{-0.5cm}
-	\[\sum_{\omega} p_\omega\, y_j^\omega \leq \alpha,
+	\vspace{-0.35cm}
+	\[\sum_{\omega \in \Omega} p_\omega\, y_j^\omega \leq \alpha,
 		\quad \forall j \quad \text{(Chance)}\label{eq:chance}
 	\]}
 	\onslide<6->{%
-	\vspace{-0.5cm}
-	\[U_j = \tfrac{1}{C_j}\textstyle\sum_{i}\sum_{\omega}
+	\vspace{-0.35cm}
+	\[U_j = \tfrac{1}{C_j}\textstyle\sum_{i}\sum_{\omega \in \Omega}
 		p_\omega S_{ij}^\omega x_{ij},
 		\quad \forall j \quad \text{(Util)}
 	\]}
 	\onslide<7->{%
-	\vspace{-0.5cm}
+	\vspace{-0.35cm}
 	\[U_j - U_k \leq Z,
 		\quad \forall j,k \quad \text{(Bal)}
 	\]}
@@ -349,51 +344,33 @@
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{General Benders Principle (from Lecture)}
+\begin{frame}{Benders Decomposition: Key Idea}
 	\onslide<1->{%
-	A large program $[P]$ with variables partitioned into groups $x$ and $y$:
-	\[
-		[P] \quad \min \; c'x + d'y
-		\quad \text{s.t.} \quad Ax + By = e, \;\; x \geq 0, \;\; y \in Y.
-	\]}
+	Given a program with complicating variables $y \in Y$ and
+	easy variables $x \geq 0$, Benders decomposition reformulates
+	it as a master problem over $y$ alone:}
 	\onslide<2->{%
-	\textbf{Step 1.} Fix $y$ and solve the \emph{primal Benders subproblem} (SPP):
 	\[
-		h(y) = \min\{c'x : Ax = e - By,\; x \geq 0\}.
+		\min_{y \in Y} \; z + d'y
 	\]}
 	\onslide<3->{%
-	\textbf{Step 2.} Derive the \emph{dual subproblem} (SPD):
+	\vspace{-0.3cm}
+	subject to \textbf{optimality cuts} (from dual extreme points
+	$\pi_p$, $p \in \mathcal{P}$):
 	\[
-		h(y) = \max\{u'(e - By) : u'A \leq c\}.
+		z \;\geq\; \pi_p'(e - By), \quad \forall p \in \mathcal{P}
 	\]}
 	\onslide<4->{%
-	\textbf{Step 3.} Reformulate $[P]$ as a \emph{master problem} with
-	\textbf{optimality cuts} from extreme points and
-	\textbf{feasibility cuts} from extreme rays of the dual domain.}
-\end{frame}
-
-\begin{frame}{General Benders: Master Problem and Cuts}
-	\onslide<1->{%
-	The equivalent master problem is:
+	\vspace{-0.3cm}
+	and \textbf{feasibility cuts} (from dual extreme rays
+	$\rho_r$, $r \in \mathcal{R}$):
 	\[
-		\min \; z + d'y
+		\rho_r'(e - By) \leq 0, \quad \forall r \in \mathcal{R}
 	\]}
-	\onslide<2->{%
-	subject to \textbf{optimality cuts} (from extreme points $\omega_p$, $p \in \Omega$):
-	\[
-		z - \omega_p'(e - By) \geq 0, \quad \forall p \in \Omega
-	\]}
-	\onslide<3->{%
-	and \textbf{feasibility cuts} (from extreme rays $\rho_r$, $r \in \Gamma$):
-	\[
-		\rho_r'(e - By) \leq 0, \quad \forall r \in \Gamma
-	\]}
-	\onslide<4->{%
-	\begin{block}{Constraint Generation}
-		Instead of enumerating all cuts, we solve a relaxed master and add
-		violated cuts iteratively. The algorithm converges in finitely many
-		iterations because the number of extreme points and rays is finite.
-	\end{block}}
+	\onslide<5->{%
+	Cuts are generated iteratively rather than enumerated.
+	Convergence is finite because the dual polyhedron has finitely
+	many extreme points and rays.}
 \end{frame}
 
 \begin{frame}{Our Decomposition Structure}
