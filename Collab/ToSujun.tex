@@ -1,0 +1,474 @@
+\section{Introduction}
+
+The efficient allocation of limited resources across competing activities represents a fundamental challenge in operations research and management science. As the modern workplace increasingly demands that individuals manage multiple professional and personal obligations under cognitive and temporal constraints, sustainable life management has emerged as an urgent research priority. Recent evidence suggests that billions of working days are lost annually due to mental health issues stemming from cognitive overload and excessive job demands \citep{Robinson2024}. The prevalence of burnout continues to rise across sectors, with physicians spending over five hours daily on electronic health record systems and additional time after work hours, contributing to physician attrition and appointment delays \citep{celik_frontiers_2024}. These trends underscore the critical importance of developing systematic approaches to resource allocation that account for human cognitive limitations and well-being.
+
+Traditional time management strategies often fail because they ignore the finite nature of human lifespan and cognitive capacity \citep{Hart2024}. Productivity depends more fundamentally on managing attention than on rigid time scheduling, as cognitive limitations make it difficult to sustain focus across competing demands in dynamic environments \citep{Grant2019}. The increasing reliance on artificial intelligence and algorithmic management systems introduces additional complexity: while AI promises efficiency gains in documentation and task automation, it also risks depleting human cognitive resources and fostering decision-making that overlooks emotional and contextual nuances \citep{Reinhart2025}. Forecasts suggest near-total AI dominance in key domains by 2027, potentially reshaping how humans allocate limited time and cognitive effort in work systems \citep{Douthat2025}. Human resource management professionals themselves are overworked with increasingly complex jobs, making many suffer from burnout and leaving insufficient time for strategic issues \citep{aguinis_how_2024}.
+
+The urgency of this research agenda is amplified by the growing recognition that health status itself constitutes a resource. Studies demonstrate that chronic illness symptom severity is positively associated with burnout and negatively associated with work engagement, even after controlling for job demands and resources \citep{cook_individual_2024}. With over half the current workforce managing one or more chronic conditions, workplace interventions that improve employee health also enhance perceived organizational support, reduce burnout, and increase work engagement \citep{haynes_evaluating_2021}. The COVID-19 pandemic has further highlighted these challenges, as maintaining traditional approaches to work during crises predisposes systems to diminished quality of care and increased burnout risk \citep{yoo_critical_2022}. Research on STEM women recovering from burnout reveals that marginalized workers in highly institutionalized settings face unique challenges in the aftermath of burnout, with important implications for workforce sustainability \citep{lee_beyond_2024}.
+
+The gig economy introduces distinct resource allocation challenges through algorithmic management. Research shows that algorithmic evaluation and discipline increase job burnout by negatively impacting workers' basic psychological needs, while algorithmic direction can alleviate burnout by enhancing autonomy and competence \citep{peng_every_2025}. This dual nature of technology-mediated work extends to augmentation-based AI tools: while frequent usage leads to knowledge gain and improved task performance, it also causes information overload that impairs both performance and recovery \citep{shao_using_2024}. Technostressors stemming from information technology use have become a major source of stress, negatively affecting work-life balance through emotional exhaustion, though job self-efficacy can buffer these effects \citep{ma_impact_2021}. Understanding how configurations of technostressors interact to produce burnout represents a critical research frontier \citep{pflügner_deconstructing_2024}.
+
+The work-family interface presents another dimension of the sustainable life management challenge. Work-family conflict research has predominantly used composite-level approaches, but dimension-level analysis reveals that time-based, strain-based, and behavior-based conflicts operate through distinct mechanisms \citep{hetrick_theoretical_2023}. Emotional resource accumulation, distinct from emotional resource depletion, helps explain how work demands affect family functioning and employee well-being \citep{ilies_emotional_2020}. Flexible working arrangements offer one potential solution: meta-analytic evidence shows that having both schedule and location flexibility is more beneficial than either alone, and that flexibility availability may be more important than actual use \citep{harrop_meta_2025}. Experimental evidence confirms that smart working increases productivity while improving work-life balance, with men also increasing time dedicated to household activities \citep{angelici_smart_2024}. Compressed workweek implementations show that work-life balance increases while fatigue and time pressure decrease, with effects contingent on employee expectations \citep{mühl_you_2024}.
+
+Resource theory provides essential foundations for understanding these dynamics. Conservation of Resources (COR) theory and the Job Demands-Resources (JD-R) framework explain how job demands and resources relate to occupational strain, with job resources moderating the demand-strain relationship \citep{ghanayem_occupational_2020}. Research extends JD-R theory beyond the work domain to show how senior executives utilize both internal and external resources for coping and resource creation \citep{duan_extending_2024}. Supervisor resilience can cross over to employees, promoting well-being through lower burnout, lower psychological distress, and greater life satisfaction \citep{brady_supervisor_2025}. Managers can help employees navigate psychologically difficult decisions through three forms of self-management: equipping, conserving, and restoring the self across preparation, execution, and transition phases \citep{molinsky_how_2023}.
+
+Optimization and decision support approaches offer promising avenues for addressing these challenges. Constraint programming models for personal process management demonstrate effectiveness in reducing cognitive load and improving planning outcomes in dynamically changing situations \citep{oruç_constraint_2022}. Just-in-time access to knowledge repositories reduces cognitive load, enables learning, and builds problem-solving capabilities \citep{subramani_capability_2021}. In healthcare, routing and scheduling optimization can improve continuity of care while enhancing resource utilization \citep{lahrichi_first_2022}. Workforce sizing and shift scheduling decisions can balance efficiency with shift stability to improve worker well-being without sacrificing profitability \citep{mandal_tactical_2025}. Two-stage stochastic game models can guide capacity planning investments to address surgical waiting lists while accounting for uncertainty \citep{acuna_two_2024}. Managing flexible capacity in service systems helps prevent worker burnout in understaffed systems while improving service quality \citep{yuan_managing_2025}.
+
+This paper develops a mixed-integer stochastic programming formulation that captures these dynamics through explicit state tracking and uncertainty modeling. The proposed model makes five primary contributions to the literature. First, we formulate the multi-period resource allocation problem as a tractable MILP with state-dependent objective weights and establish that the problem is structurally non-trivial: state-dependent coupling across time periods, multi-dimensional resource constraints, and minimum allocation requirements preclude greedy solution by simple weight-ordered ranking. Second, we incorporate uncertainty in both recovery requirements and task returns through a scenario-based stochastic programming approach, providing robustness against variable cognitive demands and productivity fluctuations that are orthogonal to the deterministic decay structure. Third, we extend the single-agent formulation to a multi-agent setting in which multiple employees share organizational resources, transforming the problem into a multiple knapsack problem with stochastic returns and sizes, thereby broadening applicability to team and organizational productivity management. Fourth, we discuss how advanced decomposition algorithms, including Benders decomposition, column generation, and branch-and-cut, can exploit the block-diagonal and scenario-based structure of the multi-agent formulation to achieve scalable solution beyond direct MILP solving. Fifth, we provide comprehensive computational experiments demonstrating the sensitivity of optimal allocations to initial conditions, with important implications for decision support system design.
+
+The remainder of this paper is organized as follows. Section~\ref{sec:literature} reviews the relevant literature on resource allocation, cognitive load theory, and work-life sustainability. Section~\ref{sec:model} presents the mathematical formulation, including decision variables, constraints, and the objective function. Section~\ref{sec:experiments} describes the computational experiments and presents the main empirical findings. Section~\ref{sec:discussion} discusses the managerial implications of the results, and Section~\ref{sec:conclusion} concludes with directions for future research.
+
+\section{Literature Review}\label{sec:literature}
+
+This section situates our work within five interconnected streams of research: (1) cognitive load and attention management, (2) job demands, resources, and burnout, (3) work-life balance and flexibility, (4) technology and AI in the workplace, and (5) optimization approaches to resource allocation.
+
+\subsection{Cognitive Load and Attention Management}
+
+Cognitive load theory provides foundational insights for sustainable life management. Research demonstrates that cognitive training yields lasting benefits, with reasoning and speed-of-processing training showing effects up to 10 years in older adults, supporting strategies for sustaining cognitive resources across the lifespan \citep{NIA2014}. Contemporary applications of cognitive load theory in computer-based environments reveal the importance of worked examples, split-attention effects, and the self-management of cognitive load \citep{ayres_something_2020}. NSF-funded research on peak productivity develops tools using smartphones and smartwatches to track biological clocks and align tasks with peak alertness periods, addressing disruptions from mismatched timing that cause health issues and errors \citep{Lefkowitz2018}.
+
+The distinction between time management and attention management is critical. Traditional time management strategies fail because they ignore cognitive constraints, forcing individuals to confront limitations and make hard choices among competing priorities rather than attempting to optimize everything \citep{Hart2024}. Productivity hinges more on managing attention than rigid time scheduling, as cognitive limitations make it difficult to sustain focus across competing demands \citep{Grant2019}. This recognition has spurred interest in decision support systems that account for cognitive constraints. Research shows that just-in-time access to codified knowledge reduces cognitive load and enables learning, with workers accessing procedural knowledge from document repositories building firm-specific human capital \citep{subramani_capability_2021}.
+
+Human-AI collaboration offers promise for reducing cognitive burden but requires careful design. Studies find that granting users decision control improves trust and compliance with AI recommendations, while explanations may increase task complexity depending on the user's cognitive ability \citep{westphal_decision_2023}. The challenge is particularly acute for knowledge workers facing information overload. Mitigation strategies include streamlining information, investing in training and mental health resources, promoting deep work with breaks, and ensuring equitable workload distribution \citep{Robinson2024}.
+
+\subsection{Job Demands, Resources, and Burnout}
+
+The Job Demands-Resources (JD-R) model provides a powerful framework for understanding sustainable life management. Research confirms that job resources moderate the relationship between job demands and occupational strain, with autonomy reducing strain under high workload conditions \citep{ghanayem_occupational_2020}. Extensions of JD-R theory beyond the work domain reveal that senior executives utilize both internal and external resources, and that job crafting creates adaptable resources to meet evolving demands \citep{duan_extending_2024}. Individual health status itself functions as a resource: chronic illness symptom severity predicts burnout and reduced work engagement above and beyond the effects of job demands and resources \citep{cook_individual_2024}.
+
+Conservation of Resources (COR) theory complements JD-R by explaining resource dynamics. Research distinguishes emotional resource accumulation from depletion, developing measurement instruments that capture how resource-generating activities (work engagement, co-worker support) and resource-depleting activities (job demands, emotional labor) differentially predict family functioning and life satisfaction \citep{ilies_emotional_2020}. Supervisor resilience can cross over to employees, with time-lagged studies demonstrating that supervisor resilience promotes employee well-being through lower burnout and psychological distress \citep{brady_supervisor_2025}. Managers can help employees navigate resource-intensive tasks through equipping, conserving, and restoring the self across task phases \citep{molinsky_how_2023}.
+
+Burnout represents a critical outcome when resource allocation fails. Healthcare providers face particular challenges: physicians' workflow decisions regarding when to perform electronic health record tasks significantly influence total workload and after-hours work, with implications for sustainable practice \citep{celik_frontiers_2024}. STEM women recovering from burnout employ distinct sensemaking strategies (combative, regenerative, and promissory) to renegotiate work trajectories, revealing the relational negotiation of protecting, investing, and fostering resources during disruption \citep{lee_beyond_2024}. Workplace interventions like the Live Healthy, Work Healthy program improve perceived organizational support, reduce burnout, and increase work engagement through structured support for chronic condition management \citep{haynes_evaluating_2021}.
+
+\subsection{Work-Life Balance and Flexibility}
+
+Work-family conflict research has evolved from composite-level to dimension-level analysis. Meta-analytic evidence demonstrates that time-based, strain-based, and behavior-based dimensions of conflict have distinct theoretical underpinnings and empirical correlates, with resource allocation theory particularly relevant to time-based conflict \citep{hetrick_theoretical_2023}. Crowdsourced firm ratings analysis reveals that work-life balance ratings influence organizational outcomes differently across industries, suggesting that decision makers should tailor motivation strategies to workforce needs \citep{liu_crowdsourced_2024}.
+
+Flexible working arrangements (FWAs) offer promising solutions to work-life challenges. Comprehensive meta-analysis identifies antecedents of FWA availability and use (managerial status, self-efficacy, task interdependency) and confirms beneficial outcomes including job satisfaction, organizational commitment, and family satisfaction \citep{harrop_meta_2025}. Importantly, having both flextime and flexplace proves more beneficial than either alone, and availability may matter more than actual use. Experimental evidence from a randomized trial demonstrates that flexible place and time of work increases productivity while improving work-life balance, with men also increasing household and care time \citep{angelici_smart_2024}.
+
+Alternative work schedules provide additional flexibility mechanisms. Longitudinal research on compressed workweek implementation shows that work-life balance increases while fatigue and time pressure decrease, with effects contingent on employee expectations regarding the schedule change \citep{mühl_you_2024}. The future of work increasingly involves hybrid arrangements despite return-to-office pressures, with research showing that work-from-anywhere policies can enhance performance through flexibility \citep{McGregor2023}.
+
+\subsection{Technology and AI in the Workplace}
+
+Technology plays a dual role in sustainable life management, serving as both enabler and stressor. Technostressors from information technology use have become a major stress source, negatively affecting work-life balance through emotional exhaustion, though job self-efficacy buffers these effects \citep{ma_impact_2021}. Configurational analysis reveals that interdependencies among technostressors (complementarity, contingency, and substitution) form patterns leading to burnout and reduced job performance, explaining why interventions addressing independent technostressors may fail \citep{pflügner_deconstructing_2024}. Information and communication technology can reduce nurses' burden by facilitating environmental management and non-contact communication while providing emotional support for patients, though implementation requires attention to digital health literacy and safety \citep{yoo_critical_2022}.
+
+Artificial intelligence introduces new dynamics into resource allocation. Reliance on algorithmic management in healthcare risks depleting human cognitive resources by favoring data summaries over nuanced listening, fostering cognitive miserliness and deskilling \citep{Reinhart2025}. In the gig economy, algorithmic evaluation and discipline increase burnout by negatively impacting psychological needs, while algorithmic direction can alleviate burnout by enhancing autonomy \citep{peng_every_2025}. Research on augmentation-based AI reveals countervailing mechanisms: frequent usage leads to knowledge gain and improved performance, but also causes information overload impairing performance and recovery \citep{shao_using_2024}. Generative AI can serve as a helpful assistant for both strategic and operational tasks when implemented with appropriate prompts and verification processes \citep{aguinis_how_2024}. Predictions of near-total AI dominance in key domains by 2027 raise fundamental questions about how humans will allocate limited time and cognitive effort as work systems evolve \citep{Douthat2025}.
+
+Human-robot collaboration in manufacturing demonstrates the potential for dynamic task allocation. Research on recyclofacturing emphasizes dynamic task distribution between humans and robots in assembly and welding, with attention to human factors for safe collaboration \citep{SCU2025}. The key insight is that technology should adapt task distribution to evolving conditions and recovery needs in human-machine teams.
+
+\subsection{Optimization Approaches to Resource Allocation}
+
+Operations research provides powerful tools for sustainable life management. Constraint programming models for personal process management decrease cognitive load from decision-making and generate positive user experiences, enabling better planning in less time and fast replanning in dynamically changing situations \citep{oruç_constraint_2022}. Behavioral research demonstrates that simpler yet efficient contracts can mitigate the trade-off between efficiency and complexity, explaining the prevalence of minimum order quantity terms in supply contracts \citep{tuncel_why_2022}. Understanding incentive structures is critical: research shows that incentivizing solely estimation accuracy can result in hidden inefficiency from strategic schedule inflation, while combined accuracy and speed incentives yield compressed but reliable schedules \citep{lorko_hidden_2023}.
+
+Healthcare resource allocation presents particularly challenging optimization problems. First Route Second Assign decomposition approaches enforce continuity of care in home health care while improving routing efficiency \citep{lahrichi_first_2022}. Two-stage stochastic game models guide capacity planning investments to address surgical waiting lists while accounting for demand uncertainty \citep{acuna_two_2024}. Multistage staffing strategies utilizing capacities of various flexibility help manage service systems facing worker shortages, preventing burnout in understaffed systems while improving service quality \citep{yuan_managing_2025}.
+
+Workforce sizing and scheduling optimization can balance multiple objectives. Research on last-mile delivery demonstrates that introducing limited shift flexibility achieves similar effects as completely flexible systems while ensuring better work-life balance for workers, showing that improved working conditions need not sacrifice profitability \citep{mandal_tactical_2025}. This insight that stability and efficiency can coexist underlies our approach to sustainable life management.
+
+\subsection{Research Gap and Contribution}
+
+Despite the extensive literature on individual aspects of cognitive load, burnout, work-life balance, technology, and optimization, no existing framework integrates these streams into a unified optimization model for personal resource allocation. Prior work either focuses on organizational interventions without mathematical formalization or develops optimization models without accounting for cognitive constraints and recovery dynamics. Our contribution addresses this gap by developing a tractable mixed-integer stochastic programming formulation that captures state-dependent prioritization, uncertain recovery requirements, and multi-dimensional value creation, providing a foundation for decision support systems that promote sustainable life management.
+
+
+@misc{Hart2024,
+  author = {Hanna Hart},
+  title = {Productivity And The Hard Truth About Time Management},
+  year = {2024},
+  month = {January},
+  url = {https://www.forbes.com/sites/hannahart/2024/01/25/productivity-and-the-hard-truth-about-time-management/},
+  abstract = {Traditional time management strategies often fail due to the finite nature of human lifespan (around 4000 weeks), forcing individuals to confront limitations and make hard choices among competing priorities rather than attempting to optimize everything. Embracing finitude involves accepting trade-offs, choosing intentional constraints to value relationships and presence, and shifting focus from future mastery over time to meaningful engagement in the present, thereby reducing the illusion of control and clarifying priorities amid cognitive and temporal constraints. This perspective directly addresses the challenge of allocating limited time and mental energy across dynamic personal and professional demands where not everything can be accomplished.},
+  note = {Accessed: January 25, 2026}
+}
+
+@misc{Robinson2024,
+  author = {Bryan Robinson},
+  title = {4 Steps To Mitigate Cognitive Overload And Career Stress Before 2025},
+  year = {2024},
+  month = {November},
+  url = {https://www.forbes.com/sites/bryanrobinson/2024/11/02/4-steps-to-mitigate-cognitive-overload-and-career-stress-before-2025/},
+  abstract = {Cognitive overload from excessive information, job demands, technology, and workplace pressures leads to substantial productivity losses, including billions of lost working days annually from mental health issues. Mitigation strategies include streamlining information, investing in training and mental health resources, promoting deep work with breaks, and ensuring equitable workload distribution to prevent burnout. These approaches aim to better allocate limited cognitive resources and time in uncertain, high-pressure career environments to sustain performance and well-being.},
+  note = {Accessed: January 25, 2026}
+}
+
+@misc{Reinhart2025,
+  author = {Eric Reinhart},
+  title = {What we lose when we surrender care to algorithms},
+  year = {2025},
+  month = {November},
+  url = {https://www.theguardian.com/us-news/ng-interactive/2025/nov/09/healthcare-artificial-intelligence-ai},
+  abstract = {Reliance on AI in healthcare, such as algorithmic scribes, promises efficiency but risks depleting human cognitive resources by favoring data summaries over nuanced listening, leading to decision-making that overlooks emotional and contextual uncertainties in patient care. This fosters cognitive miserliness, deskilling, and alienation in dynamic clinical interactions where incomplete or biased data heightens uncertainty. While short-term productivity gains occur in documentation, long-term costs include reduced care quality, physician burnout, and structural issues, highlighting trade-offs in allocating human attention and recovery needs when systems evolve with AI integration.},
+  note = {Accessed: January 25, 2026}
+}
+
+@misc{McGregor2023,
+  author = {Jena McGregor},
+  title = {The Future Of Work 50 2023},
+  year = {2023},
+  month = {November},
+  url = {https://www.forbes.com/sites/jenamcgregor/2023/11/08/the-future-of-work-50-2023/},
+  abstract = {The 2023 list spotlights leaders addressing AI's dual role in replacing jobs or reducing tedium, alongside persistent hybrid work models despite return-to-office pushes. Investments like PwC's AI training for workers aim to boost productivity, while research shows work-from-anywhere policies can enhance performance through flexibility. These trends relate to reallocating time and cognitive resources in uncertain economic and technological landscapes to optimize efficiency and adaptation.},
+  note = {Accessed: January 25, 2026}
+}
+
+@misc{Grant2019,
+  author = {Adam Grant},
+  title = {Productivity Isn't About Time Management. It's About Attention Management.},
+  year = {2019},
+  month = {March},
+  url = {https://www.nytimes.com/2019/03/28/smarter-living/productivity-isnt-about-time-management-its-about-attention-management.html},
+  abstract = {Productivity hinges more on managing attention than rigid time scheduling, as cognitive limitations make it difficult to sustain focus across competing demands in fast-paced environments. Shifting emphasis to attention control helps navigate dynamic task landscapes where distractions and uncertainty drain limited mental resources.},
+  note = {Accessed: January 25, 2026}
+}
+
+@misc{Douthat2025,
+  author = {Ross Douthat},
+  title = {The Forecast for 2027? Total A.I. Domination.},
+  year = {2025},
+  month = {May},
+  url = {https://www.nytimes.com/2025/05/15/opinion/artifical-intelligence-2027.html},
+  abstract = {The piece explores scenarios of near-total AI dominance in key domains by 2027, potentially reshaping how humans allocate limited time and cognitive effort in work systems. It discusses implications for productivity when AI handles complex tasks amid dynamic evolution and uncertain human recovery needs.},
+  note = {Accessed: January 25, 2026}
+}
+
+@misc{Lefkowitz2018,
+  author = {Melanie Lefkowitz},
+  title = {NSF awards \$2M for researchers on trail of peak productivity},
+  year = {2018},
+  month = {December},
+  url = {https://news.cornell.edu/stories/2018/12/nsf-awards-2m-researchers-trail-peak-productivity},
+  abstract = {Under a $2 million NSF Future of Work grant, researchers (led by Tanzeem Choudhury at Cornell) are developing tools using smartphones/smartwatches to track biological clocks and align tasks with peak alertness periods, aiming to boost performance and reduce stress in dynamic settings like shift work. This addresses disruptions from mismatched timing that cause health issues and errors, offering interventions for better cognitive resource allocation amid uncertain recovery and evolving demands. The project supports optimizing productivity by scheduling demanding tasks during natural high-alertness windows.},
+  note = {Accessed: January 25, 2026}
+}
+
+@misc{NIA2014,
+  author = {Barbara Cire},
+  title = {Cognitive training shows staying power},
+  year = {2014},
+  month = {January},
+  url = {https://www.nia.nih.gov/news/cognitive-training-shows-staying-power},
+  abstract = {The NIH-funded ACTIVE study (National Institute on Aging and National Institute of Nursing Research) demonstrated that reasoning and speed-of-processing cognitive training yields lasting benefits up to 10 years in older adults, with trained participants maintaining or exceeding baseline performance more than controls. While memory training effects faded and objective functional gains were limited, participants reported less difficulty with daily tasks. This supports strategies for sustaining cognitive resources and managing task demands in aging-related uncertain contexts.},
+  note = {Accessed: January 25, 2026}
+}
+
+@misc{SCU2025,
+  author = {Jose Diaz},
+  title = {Santa Clara University Joins Multi-University NSF Grant to Advance ``Recyclofacturing'' and the Future of U.S. Manufacturing},
+  year = {2025},
+  month = {September},
+  url = {https://www.scu.edu/engineering/news--events/press-releases/santa-clara-university-joins-multi-university-nsf-grant-to-advance-recyclofacturing-and-the-future-of-us-manufacturing.html},
+  abstract = {Santa Clara University partners in a nearly $3 million NSF Future Manufacturing grant to advance ``recyclofacturing'' using AI, extended reality, and co-robotics for sustainable local production from scrap metal. Research at SCU emphasizes dynamic task allocation between humans and robots in assembly/welding, alongside human factors for safe collaboration. This enhances productivity and resource management in uncertain manufacturing systems by adapting task distribution to evolving conditions and recovery needs in human-robot teams.},
+  note = {Accessed: January 25, 2026}
+}
+
+@article{westphal_decision_2023,
+  author = {Westphal, Monika and Vössing, Michael and Satzger, Gerhard and Yom-Tov, Galit B. and Rafaeli, Anat},
+  abstract = {Human-AI collaboration has become common, integrating highly complex AI systems into the workplace. Still, it is often ineffective; impaired perceptions – such as low trust or limited understanding – reduce compliance with recommendations provided by the AI system. Drawing from cognitive load theory, we examine two techniques of human-AI collaboration as potential remedies. In three experimental studies, we grant users decision control by empowering them to adjust the system's recommendations, and we offer explanations for the system's reasoning. We find decision control positively affects user perceptions of trust and understanding, and improves user compliance with system recommendations. Next, we isolate different effects of providing explanations that may help explain inconsistent findings in recent literature: while explanations help reenact the system's reasoning, they also increase task complexity. Further, the effectiveness of providing an explanation depends on the specific user's cognitive ability to handle complex tasks. In summary, our study shows that users benefit from enhanced decision control, while explanations – unless appropriately designed for the specific user – may even harm user perceptions and compliance. This work bears both theoretical and practical implications for the management of human-AI collaboration.},
+  title = {{Decision} {Control} {and} {Explanations} {in} {human-AI} {Collaboration}: {Improving} {User} {Perceptions} {and} {Compliance}},
+  journal = {Computers in Human Behavior},
+  year = {2023},
+  doi = {10.1016/j.chb.2023.107714},
+  volume = {144},
+}
+
+@article{cook_individual_2024,
+  author = {Cook, Alexandra and Zill, Alexander},
+  abstract = {Epidemiological data suggest that the prevalence of autoimmune diseases is increasing. Although evidence implies that people with chronic illnesses experience higher levels of burnout, there are few available insights for developing preventative interventions. This paper builds on the conservation of resources (COR) and the job demands–resources (JD-R) framework to investigate the association between impaired health, burnout, and work engagement. In two studies, we research the role of health status as a resource, respectively, autoimmune illness symptom severity as a diminished resource, and investigate its variance explanation in burnout and work engagement above and beyond the effects of job demands and resources. Study 1 investigated the hypotheses among 87 employees with inflammatory bowel diseases. Controlling for job demands and resources, symptom severity was positively associated with (exhaustion) burnout and negatively associated with work engagement. In Study 2, we applied mixed model analyses using a sample of 129 employees with multiple sclerosis. We found significant associations of symptom severity on burnout and vigor work engagement above and beyond the effects of job demands and social support. Our studies provide important insights for employees with chronic illnesses and the organizations in which they work and give indications for theory development, future research, and the development of interventions.},
+  title = {{Individual} {Health} {Status} {As} {A} {Resource}: {Analyzing} {Associations} {Between} {Perceived} {Illness} {Symptom} {Severity}, {Burnout}, {and} {Work} {Engagement} {Among} {Employees} {with} {Autoimmune} {Diseases}},
+  journal = {Applied Psychology},
+  year = {2024},
+  doi = {10.1111/apps.12464},
+  volume = {73},
+  pages = {990--1025},
+}
+
+@article{haynes_evaluating_2021,
+  author = {Haynes, Nicholas J. and Vandenberg, Robert J. and Wilson, Mark G. and DeJoy, David M. and Padilla, Heather M. and Smith, Matthew Lee},
+  abstract = {The prevalence of chronic health conditions is increasing, with over half the current workforce attempting to manage one or more chronic conditions. The Live Healthy, Work Healthy (LHWH) program is a version of the Chronic Disease Self-Management Program translated to the workplace, with the goal of improving and sustaining the health, well-being, and productivity of employees living with chronic health conditions. Using organizational support theory as a theoretical framework and a clustered randomized controlled trial design, this article demonstrates how the LHWH program positively impacts work-related quality of life, orientations toward the organization, and organizational cognitions and behaviors. Participants in the program experienced increases in perceived organizational support (POS), with a large intervention effect. Direct intervention effects were also found for burnout, work engagement, work ability, affective organizational commitment, and organizational citizenship behaviors. Within-person changes in POS during the intervention was a key mechanism through which participants of the program experienced changes in organizationally relevant outcomes. Finally, offering the program on work time strengthened these effects indirectly through greater changes in POS during the intervention period. This article provides evidence to researchers and organizational decision-makers that offering the LHWH program not only improves the health and well-being of employees but also improves important organizational outcomes.},
+  title = {{Evaluating} {The} {Impact} {of} {The} {Live} {Healthy}, {Work} {Healthy} {Program} {On} {Organizational} {Outcomes}: {A} {Randomized} {Field} {Experiment}},
+  journal = {Journal of Applied Psychology},
+  year = {2021},
+  doi = {10.1037/apl0000977},
+  volume = {107},
+  pages = {1758--1780},
+}
+
+@article{subramani_capability_2021,
+  author = {Subramani, Mani and Wagle, Mihir and Ray, Gautam and Gupta, Alok},
+  abstract = {With knowledge and expertise increasingly being recognized as important, firms have made significant investments in document repositories as part of their knowledge management initiatives. Document repositories are intended to enhance the ability to access codified knowledge and help improve task performance through knowledge reuse. However, it is not clear what effects they have on how knowledge workers perform their tasks. Using longitudinal data on repository accesses and calls to technical support by field technicians in an engineering firm, we examine how just-in-time access to codified knowledge affects patterns of help-seeking from technical support. We find evidence that greater accessing of codified knowledge reduces calls for help to technical support. The type of codified knowledge accessed from the repository affects field technicians’ calling behavior. Accessing general knowledge reduces calls to support for low-complexity problems, while accessing procedural knowledge reduces calls related to high-complexity problems. Further, accessing procedural knowledge is significantly associated with promotion, suggesting that the use of document repositories can help individuals build firm-specific human capital. Building on the insights of cognitive load theory, this study suggests that making information available just in time through document repositories reduces the cognitive load involved for task performance and enables learning. This work contributes to a greater understanding of the value of knowledge management systems and suggests that, beyond the efficiencies gained from knowledge reuse, just-in-time access to knowledge repositories builds problem solving capabilities and contributes to human capital development.},
+  title = {{Capability} {Development} {Through} {Just-in-time} {Access} {to} {Knowledge} {in} {Document} {Repositories}: {A} {Longitudinal} {Examination} {of} {Technical} {Problem} {Solving}},
+  journal = {MIS Quarterly Management Information Systems},
+  year = {2021},
+  doi = {10.25300/MISQ/2021/15635},
+  volume = {45},
+  pages = {1287--1308},
+}
+
+@article{oruç_constraint_2022,
+  author = {Oruç, Sercan and Eren, P. Erhan and Koçyiğit, Altan},
+  abstract = {Decision-making in everyday life has an essential role in effectively completing personal tasks and processes. The complexity of these processes and the resulting cognitive load of managing them may vary significantly. To decrease the cognitive load created by such decision-making efforts and to obtain better outcomes, recommendation systems carry significant potential. In order to investigate the benefits provided by decision support systems (DSS) in personal process management (PPM), we first build a constraint programming (CP) model and a prototype context-aware-mobile application employing this CP model. Then, we evaluate the application and the model via two exemplary real-world scenarios. The scenarios form the core of the experiments conducted with 50 participants. We compare the participants’ planning performances with and without the PPM system with quantitative metrics such as planning times and scenario objective values. In addition, System Usability Scale (SUS) questionnaires and open-ended questions provide qualitative evaluation results. Throughout the study, we apply the Design Science Research methodology to rigorously conduct research activities by proof of concept, proof of use, and proof of value. The empirical results clearly show that our proposed model for PPM is effective, and the developed prototype solution generates positive participant comments as well as a high SUS score. Overall, the prototype PPM system with CP implementation leads to better planning in less time in the planning phase, and it lets the user do fast replanning in the execution phase, which is invaluable in dynamically changing situations such as daily activities.},
+  title = {{A} {Constraint} {Programming} {Model} {for} {Making} {Recommendations} {in} {Personal} {Process} {Management}: {A} {Design} {Science} {Research} {Approach}},
+  journal = {Decision Support Systems},
+  year = {2022},
+  doi = {10.1016/j.dss.2021.113665},
+  volume = {152},
+}
+
+@article{peng_every_2025,
+  author = {Peng, Juan and Wei, Minyuan and Loi, Teng Iat and Li, Jiaojiao},
+  abstract = {Purpose: This research focuses on how algorithmic management, as a primary method of platform governance, affects job burnout among gig workers. Drawing on self-determination theory, our study examines the various effects of algorithmic management’s aspects on gig workers' job burnout. Design/methodology/approach: This study targeted gig workers (car drivers and food-delivery workers) and was conducted in two waves. Data analysis was facilitated using SPSS 22.0 and MPlus 8.4, a tool for CB-SEM (covariance-based structural equation modeling). Findings: Algorithmic evaluation and discipline increase job burnout by negatively impacting gig workers' basic psychological needs. Algorithmic direction, in contrast, alleviates job burnout by enhancing basic psychological needs among gig workers. Practical implications: Platform companies should address gig workers’ burnout by implementing advanced algorithmic management and providing autonomy-supportive environments. Adopting human-centric algorithmic practices can strengthen the platform–worker relationship, boost competence and reduce resistance to oversight. Originality/value: Our study contributes to the literature by examining the various effects of algorithmic management on gig workers. By applying self-determination theory, we provide a novel perspective on understanding the mechanisms of job burnout in the gig economy.},
+  title = {{Every} {Coin} {Has} {Two} {Sides}: {A} {Self-determination} {Perspective} {On} {The} {Relationship} {Between} {Algorithmic} {Management} {and} {Gig} {Workers’} {Job} {Burnout}},
+  journal = {Journal of Managerial Psychology},
+  year = {2025},
+  doi = {10.1108/JMP-12-2023-0737},
+  volume = {40},
+  pages = {243--258},
+}
+
+@article{mühl_you_2024,
+  author = {Mühl, Arabella and Korunka, Christian},
+  abstract = {With a refreshed surge of interest in alternative work schedules, such as the compressed workweek, as a tool to increase employer attractiveness, the question of the effects of such work arrangements recurs. In light of inconsistent research findings, we examined the effects of the implementation of a four-day compressed workweek on time pressure, fatigue, perceived productivity, and work-life balance within a construction company. Moreover, we investigated the effect of employee expectations. Drawing on longitudinal data (N = 247) and using Latent Change Score Modelling (LCSM), we found that work-life balance increased while fatigue and time pressure decreased. Three months after implementing a compressed work schedule, perceived productivity remained stable. These effects were contingent on individuals’ expectations regarding the effect of the compressed schedule. The results highlight the importance of employee expectations in shaping the outcomes of the adoption of alternative work schedules.},
+  title = {{You} {Get} {What} {You} {Expect}: {Assessing} {The} {Effect} {of} {A} {Compressed} {Work} {Schedule} {On} {Time} {Pressure}, {Fatigue}, {Perceived} {Productivity}, {and} {Work-life} {Balance}},
+  journal = {European Journal of Work and Organizational Psychology},
+  year = {2024},
+  doi = {10.1080/1359432X.2024.2379061},
+  volume = {33},
+  pages = {703--711},
+}
+
+@article{aguinis_how_2024,
+  author = {Aguinis, Herman and Beltran, Jose R. and Cope, Amando},
+  abstract = {Human resource management (HRM) professionals are often overworked, and their jobs are increasingly complex. Therefore, many suffer from job burnout, and only some can allocate the necessary time to strategic issues. We show how generative artificial intelligence (AI), particularly ChatGPT, can be a helpful HRM assistant for both strategic and operational tasks. But, for this to happen, we demonstrate the need to create valuable prompts that result in specific, helpful, and actionable HRM recommendations. Accordingly, we provide eight guidelines for creating high-quality and effective prompts and illustrate their usefulness in general across eight critical HRM domains and in more depth in the particular areas of workforce diversity and strategic HRM. We also provide recommendations and demonstrate how to implement a critical verification process to check on ChatGPT's suggestions. We conclude with a list of “dos and don'ts” and that when used by sufficiently trained HRM professionals, it is a very useful tool because it helps complete tasks faster, hopefully reducing their job burnout and allowing them to allocate more time to strategic and long-term issues. In turn, these benefits will likely result in helping achieve the as-of-yet-unrealized aspiration of “having a seat at the table.”},
+  title = {{How} {to} {Use} {Generative} {AI} {As} {A} {Human} {Resource} {Management} {Assistant}},
+  journal = {Organizational Dynamics},
+  year = {2024},
+  doi = {10.1016/j.orgdyn.2024.101029},
+  volume = {53},
+}
+
+@article{brady_supervisor_2025,
+  author = {Brady, Jacquelyn M. and Hammer, Leslie B. and Westman, Mina},
+  abstract = {Drawing on Conservation of Resources theory and Crossover theory, we investigated the potential for crossover of a personal resource, resilience, from supervisors to employees. Specifically, the present study examined whether supervisor resilience influences employee well-being (i.e., psychological distress, burnout, and life satisfaction) via a top-down resilience crossover process. The present study utilized a time-lagged design with three data points over a 9-month period. The sample consisted of 178 supervisors and 741 employees from the United States National Guard. Multi-level models controlling for baseline levels of the outcome variables demonstrated support for time-lagged resilience crossover from supervisor to employee. Moreover, results demonstrated support for the subsequent indirect effects on improved employee well-being outcomes including lower burnout and psychological distress, and greater life satisfaction. As such, our research contributes to our understanding of promoting employee resilience, crossover effects, and promoting employee well-being. In doing so, we integrate COR theory and Crossover theory to elucidate personal resource crossover as it pertains to supervisor and employee resilience. Additionally, we expand on understanding of how supervisor resilience can have indirect positive effects on employee well-being. Implications for theory and practice, as well as future research directions are also discussed in light of our findings.},
+  title = {{Supervisor} {Resilience} {Promotes} {Employee} {Well-being}: {The} {Role} {of} {Resource} {Crossover}},
+  journal = {Journal of Vocational Behavior},
+  year = {2025},
+  doi = {10.1016/j.jvb.2024.104076},
+  volume = {156},
+}
+
+@article{duan_extending_2024,
+  author = {Duan, Zheng (Daniel) and Yao, Christian and Qi, Hongxia},
+  abstract = {Purpose: Extensive research has demonstrated the influence of job resources on mitigating the impact of high job demands on individual well-being. Still, little is known about how individuals use job resources to cope. This study advances job demands-resources (JD-R) theory by investigating the process of job resource utilization from a coping perspective. Design/methodology/approach: This study is based on in-depth interviews with 32 Chinese senior executives using a Critical Incident Technique (CIT) for data collection and thematic analysis for data analysis. Findings: Data analysis reveals a 2x2 matrix model of resource utilization, highlighting the relevance of internal and external job resources in coping and resource creation. Practical implications: The findings suggest that work stress intervention should look beyond the organizational domain and assist senior executives in exploring and developing external resources for coping. Additionally, organizations should equip senior executives with sufficient support to create new job resources that effectively manage complicated job demands. Originality/value: The results of this study extend the understanding of job resources by distinguishing internal and external job resources. It also provides a dynamic view of resource utilization, emphasizing the role of job crafting in creating adaptable job resources to meet job demands.},
+  title = {{Extending} {The} {Job} {Demands-resources} {Theory} {Beyond} {The} {Work} {Domain}: {Narratives} {of} {Chinese} {Senior} {Executives}},
+  journal = {Journal of Managerial Psychology},
+  year = {2024},
+  doi = {10.1108/JMP-02-2023-0116},
+  volume = {39},
+  pages = {67--82},
+}
+
+@article{celik_frontiers_2024,
+  author = {Celik, Umit and Rath, Sandeep and Kesavan, Saravanan and Staats, Bradley R.},
+  abstract = {Problem definition: Physicians spend more than five hours a day working on Electronic Health Record (EHR) systems and more than an hour doing EHR tasks after the end of the workday. Numerous studies have identified the detrimental effects of excessive EHR use and after-hours work, including physician burnout, physician attrition, and appointment delays. However, EHR time is not purely an exogenous factor because it depends on physician usage behavior that could have important operational consequences. Interestingly, prior literature has not considered this topic rigorously. In this paper, we investigate how physicians’ workflow decisions on when to perform EHR tasks affect: (1) total time on EHR and (2) time spent after work. Methodology/results: Our data comprise around 150,000 appointments from 74 physicians from a large Academic Medical Center Family Medicine unit. Our data set contains detailed, process-level time stamps of appointment progression and EHR use. We find that the effect of working on EHR systems depends on whether the work is done before or after an appointment. Pre-appointment EHR work reduces total EHR workload and after-work hours spent on EHR. Post-appointment EHR work reduces after-work hours on EHR but increases total EHR time. We find that increasing idle time between appointments can encourage both pre- and post-appointment EHR work. Managerial implications: Our results not only help us understand the timing and structure of work on secondary tasks more generally but also will help healthcare administrators create EHR workflows and appointment schedules to reduce physician burnout associated with excessive EHR use.},
+  title = {{Frontiers} {in} {Operations}: {Does} {Physician’s} {Choice} {of} {When} {to} {Perform} {EHR} {Tasks} {Influence} {Total} {EHR} {Workload}?},
+  journal = {Manufacturing and Service Operations Management},
+  year = {2024},
+  doi = {10.1287/msom.2023.0028},
+  volume = {26},
+  pages = {1190--1210},
+}
+
+@article{hetrick_theoretical_2023,
+  author = {Hetrick, Andrea L. and Haynes, Nicholas J. and Clark, Malissa A. and Sanders, Katelyn N.},
+  abstract = {Most work–family conflict (WFC) research does not theorize, hypothesize, or empirically test phenomena at the dimension level. Instead, researchers have predominantly used composite-level approaches based on the directions of WFC (work-to-family and family-to-work conflict). However, conceptualizing and operationalizing WFC at the composite level instead of at the dimension level has not been confirmed as a wellfounded strategy. The goal of the current research is to explore whether there is theoretical and empirical evidence in the WFC literature to support the importance of dimension-level theorizing and operationalization when compared to composite-level approaches. To advance theory related to the dimensions of WFC, we begin by reviewing WFC theories and then demonstrate the relevance of resource allocation theory to the time-based dimension, spillover theory to the strain-based dimension, and boundary theory to the behaviorbased dimension. From this theorizing, we highlight and meta-analytically test the relative importance of specific variables from the WFC nomological network that are theoretically connected to each dimension: time and family demands for the time-based dimension, work role ambiguity for the strain-based dimension, and family-supportive supervisor behaviors and nonwork support for the behavior-based dimension. Reviewing and drawing from bandwidth-fidelity theory, we also question whether composite-based WFC approaches are more appropriate for broad constructs (i.e., job satisfaction and life satisfaction). The results of our meta-analytic relative importance analyses generally support a dimension-based approach and overall follow the pattern of results expected from our dimension-level theorizing, even when broad constructs are considered. Theoretical, future research, and practical implications are discussed.},
+  title = {{The} {Theoretical} {and} {Empirical} {Utility} {of} {Dimension-based} {Work–family} {Conflict}: {A} {Meta-analysis}},
+  journal = {Journal of Applied Psychology},
+  year = {2023},
+  doi = {10.1037/apl0000552},
+  volume = {109},
+  pages = {987--1003},
+}
+
+@article{lahrichi_first_2022,
+  author = {Lahrichi, Nadia and Lanzarone, Ettore and Yalçındağ, Semih},
+  abstract = {Home health care (HHC) is a very popular service that plays an important role in reducing hospitalization costs and improving the quality of life for patients. Human resource planning is one of the most important processes in HHC facilities, and service providers must deal with several operational problems, e.g., the assignment of nurses to patients and the nurse routing. These two problems in HHC are intrinsically related. In the literature, they are solved simultaneously or sequentially, by exploiting First Assign Second Route (FASR) decomposition approaches in which the assignment problem is solved first and the routing problem is solved second. However, on the one hand, the simultaneous approach focuses primarily on the routing component of the problem but fails to offer continuity of care to the patients. On the other hand, FASR is more adequate to enforce the continuity of care constraint but is less effective toward the routing part. In this paper, we propose a novel decomposition approach that combines the advantages of each these approaches, which is based on the First Route Second Assign (FRSA) paradigm. To validate our FRSA approach and compare with a benchmark FASR decomposition, we also develop an instance generator that is inspired by real HHC settings with different sizes and travel time ratios. Experiments show the effectiveness of the FRSA decomposition and improvements with respect to the classical FASR, especially when travel times constitute a relevant part of the workload and the routing component of the problem is predominant; moreover, continuity of care is fully respected. Thus, FRSA can be effectively implemented by HHC providers for an efficient planning of resources and visits, especially where patients are spread in a vast territory.},
+  title = {{A} {First} {Route} {Second} {Assign} {Decomposition} {to} {Enforce} {Continuity} {of} {Care} {in} {Home} {Health} {Care}},
+  journal = {Expert Systems with Applications},
+  year = {2022},
+  doi = {10.1016/j.eswa.2021.116442},
+  volume = {193},
+}
+
+@article{molinsky_how_2023,
+  author = {Molinsky, Andrew and Noval, Laura},
+  abstract = {This paper examines the dilemma of having to perform a resource-intensive task under conditions of resource depletion. Drawing from data on resource-depleting tasks in multiple contexts, we document three distinct forms of self-management (equipping, conserving, and restoring the self) that individuals use across three distinct phases of the task (preparation, execution, transition) to manage psychological resources, and we detail the particular practices used to serve each of these core resource management functions. We offer a series of practical suggestions for organizations to help employees manage these psychologically difficult tasks.},
+  title = {{How} {Managers} {Can} {Help} {Employees} {Navigate} {Tough} {Decisions} {Without} {Burning} {Out}},
+  journal = {Organizational Dynamics},
+  year = {2023},
+  doi = {10.1016/j.orgdyn.2023.100999},
+  volume = {52},
+}
+
+@article{lorko_hidden_2023,
+  author = {Lorko, Matej and Servátka, Maroš and Zhang, Le},
+  abstract = {Establishing realistic project plans and completing the resulting business projects on schedule is crucial for organizations striving to effectively utilize their resources. However, incentivizing on-time project delivery may result in moral hazard, as people could respond to estimation accuracy incentives by strategically inflating duration estimates and subsequently prolonging project execution. While the project is delivered on time, the resources are underutilized. We conjecture that the possibility of moral hazard can be mitigated by introducing speed incentives in addition to the schedule accuracy incentives. We conduct a diagnostic test of the effect of accuracy and speed incentives on the process of project estimation and delivery. Our study presents direct empirical evidence that the incentive structure rewarding solely the estimation accuracy can result in hidden inefficiency due to inflated estimates and deliberately slower project execution. When speed incentives are implemented alongside estimation accuracy incentives, the estimates are significantly lower and the project is completed more quickly, without compromising the schedule accuracy or output quality. Aligning the objectives of a project owner with those of planners, by incentivizing the planners for both estimation accuracy and quick project completion, fosters more compressed but still accurate and reliable project schedules, and accelerated project delivery.},
+  title = {{Hidden} {Inefficiency}: {Strategic} {Inflation} {of} {Project} {Schedules}},
+  journal = {Journal of Economic Behavior and Organization},
+  year = {2023},
+  doi = {10.1016/j.jebo.2022.12.014},
+  volume = {206},
+  pages = {313--326},
+}
+
+@article{shao_using_2024,
+  author = {Shao, Yiduo and Huang, Chengquan and Song, Yifan and Wang, Mo and Song, Young Ho and Shao, Ruodan},
+  abstract = {Augmentation-based artificial intelligence (AI) artifacts are increasingly being incorporated into the workplace. The coupling of employees and AI tools, given their complementary strengths, expands and expedites employees’ access to information and affords important learning opportunities. However, existing research has yet to fully understand the learning-based benefits and challenges for employees in augmentation. Integrating insights from AI augmentation literature and cognitive load theory, we conducted a daily diary study to understand employees’ experience using augmentation-based AI at work on a daily basis. We theorized and found that, on the one hand, frequent usage of augmentation-based AI during a workday was associated with greater knowledge gain and subsequently better task performance at the end of the workday. On the other hand, using augmentation-based AI frequently also led employees to experience information overload, which in turn impaired their performance and recovery at the end of the workday. In addition to elucidating the countervailing mechanisms, we identified employee openness to experience as a dispositional factor, and positive affect as a momentary state that shaped the effects of using augmentation-based AI over the workday. Our research has implications for understanding AI augmentation dynamics from a learning-based perspective, as well as AI’s impact on employees at large.},
+  title = {{Using} {Augmentation-based} {AI} {Tool} {at} {Work}: {A} {Daily} {Investigation} {of} {Learning-based} {Benefit} {and} {Challenge}},
+  journal = {Journal of Management},
+  year = {2024},
+  doi = {10.1177/01492063241266503},
+}
+
+@article{ghanayem_occupational_2020,
+  author = {Ghanayem, Mohamad and Srulovici, Einav and Zlotnick, Cheryl},
+  abstract = {Aim: To examine whether job resources moderate the relationship between job demands and occupational strain, and whether occupational strain mediates the relationship between job demands and job satisfaction. Background: The job demand–resource model suggests that job demands and job resources are related to occupational strain, and occupational strain is associated with job satisfaction. Methods: In 2018, a cross-sectional study was conducted with a convenience sample of 85 nurses from six haemodialysis units. Linear regression with moderation–mediation analysis was conducted using SPSS software. Results: Under low workload levels, no association between autonomy and occupational strain existed, but under high workload levels, a negative relationship was found between autonomy and occupational strain. Under low workload levels, a negative relationship was found between social support and occupational strain, but under high workload levels, a positive relationship was found. Finally, there was no association between occupational strain and job satisfaction. Conclusion: Job resources are moderators of the relationship between job demands and occupational strain. However, there was no significant association between occupational strain and job satisfaction. Implications for Nursing Management: Nurse leaders should strengthen nurses' autonomy, which can reduce occupational strain. Additionally, sources of support are needed to help nurses cope with the workload and occupational strain.},
+  title = {{Occupational} {Strain} {and} {Job} {Satisfaction}: {The} {Job} {Demand–resource} {Moderation–mediation} {Model} {in} {Haemodialysis} {Units}},
+  journal = {Journal of Nursing Management},
+  year = {2020},
+  doi = {10.1111/jonm.12973},
+  volume = {28},
+  pages = {664--672},
+}
+
+@article{tuncel_why_2022,
+  author = {Tuncel, Ozge and Taneri, Niyazi and Hasija, Sameer},
+  abstract = {Problem definition: In theory, all coordinating contracts are equivalent; however, the minimum order quantity (MOQ) contract is observed to be more popular in practice. We seek to understand whether decision makers as suppliers can perform better with the MOQ contract and, if so, why. We also study whether MOQ is indeed the preferred contract when subjects are allowed to choose among coordinating contracts. Academic/practical relevance: The behavioral operations management literature has established a trade-off between complex coordinating and simple noncoordinating contracts. This paper fills a gap in the literature by studying whether and how the coordinating MOQ contract attenuates this trade-off. Methodology: First, we test whether subjects in the role of suppliers given only a single contract type can optimize its parameters. Second, we introduce treatments where the coordinating contracts subject to demand risk are hedged such that risk is eliminated. Third, we repeat two of the initial sets of treatments with a cognitive load survey and introduce single-variable versions of those treatments to reduce cognitive burden. Fourth, we introduce a novel experimental design where, in each period, subjects choose both the type of contract to offer and the parameters of that contract. Results: We find that (i) subjects perform significantly better with the MOQ contract compared with other coordinating contracts; (ii) this can be attributed to the risk inherent in and cognitive burden induced by those contracts; and (iii) subjects choose the MOQ contract more frequently over theoretically equivalent coordinating contracts. Managerial implications: We show that the trade-off between efficiency and complexity can be mitigated by simpler yet efficient contracts. Hence, there is considerable benefit to identifying contractual mechanisms that ameliorate the adverse effects of complexity. This explains the prevalence of MOQ terms in supply contracts.},
+  title = {{Why} {Are} {Minimum} {Order} {Quantity} {Contracts} {Popular} {in} {Practice}? {A} {Behavioral} {Investigation}},
+  journal = {Manufacturing and Service Operations Management},
+  year = {2022},
+  doi = {10.1287/msom.2021.1061},
+  volume = {24},
+  pages = {2166--2182},
+}
+
+@article{liu_crowdsourced_2024,
+  author = {Liu, Zongxi and Bao, Donglai and Xiao, Xiao and Zhao, Huimin},
+  abstract = {Employees' reviews, feedback, opinions, and experiences shared on crowdsourcing platforms are now widely used by human resource management researchers to analyze a firm's performance, management effectiveness, and culture. The analysis of firm ratings posted by employees on crowdsourcing platforms can not only provide timely feedback and insights into a firm's operations but also inspire managers to make better decisions to improve organizational performance. Based on economic and psychological theories, we conduct a comprehensive and item-by-item analysis of firm ratings on Glassdoor using panel vector autoregression to explore the interactive relationship between crowdsourced firm ratings and Total Factor Productivity (TFP), examining whether this relationship differs across industries. We find a circular interaction between firms' overall ratings and TFP. Additionally, we explore employees' perspectives on compensation and work-life balance. Our results indicate that compensation ratings negatively impact TFP, whereas work-life balance ratings are solely influenced by the lagged self. Finally, we observe that the interaction between Glassdoor firm ratings and TFP varies across industries. Our study suggests that decision makers of different industries should tailor motivation strategies to suit the specific needs of their workforce, allocating resources differently between compensation and work-life balance initiatives.},
+  title = {{Crowdsourced} {Firm} {Ratings} {and} {Total} {Factor} {Productivity}: {An} {Empirical} {Examination}},
+  journal = {Decision Support Systems},
+  year = {2024},
+  doi = {10.1016/j.dss.2024.114218},
+  volume = {181},
+}
+
+@article{ayres_something_2020,
+  author = {Ayres, Paul},
+  abstract = {This article discusses the findings from a collection of six studies linked together by the common theme of cognitive load theory and published in Computers in Human Behavior. A number of familiar cognitive load conditions and effects are investigated in computer-based environments, namely worked examples, split-attention, and the expertise reversal effect; but in many cases cognitive load considerations are combined with other learning strategies such as pre-training, thinking aloud, self-explanations, embodied cognition, and presentation pausing. A number of key findings are identified including the use of contemporary physiological instruments to measure cognitive load. There is also a focus on real-world tasks and medical education, as well as the self-management of cognitive load.},
+  title = {{Something} {Old}, {Something} {New} {from} {Cognitive} {Load} {Theory}},
+  journal = {Computers in Human Behavior},
+  year = {2020},
+  doi = {10.1016/j.chb.2020.106503},
+  volume = {113},
+}
+
+@article{pflügner_deconstructing_2024,
+  author = {Pflügner, Katharina and Maier, Christian and Thatcher, Jason Bennett and Mattke, Jens and Weitzel, Tim},
+  abstract = {Understanding how technostressors lead to technostrain, such as high job burnout or low job performance, has become a core question in information systems (IS) research and practice. To unpack this relationship, we build on general systems theory to argue that the next step for technostress research is to go beyond examining the independent influences of technostressors and discuss how their interdependencies lead to technostrain. To illustrate our argument empirically, we use fuzzy-set qualitative comparative analysis (fsQCA) and identify four configurations of high- and low-intensity technostressors that lead to high job burnout and one that leads to low job performance. We show that three types of interdependencies among technostressors, i.e., complementarity, contingency, and substitution, form configurations that lead to technostrain. Within these configurations, high-intensity technostressors can mutually enhance their effects and low-intensity technostressors can buffer the impact of other high-intensity technostressors on technostrain. The results help to explain why organizational interventions that address independent technostressors may fail if they do not account for the interdependencies among technostressors. Our work provides evidence of the need to further develop theories that explain how and why interdependencies among technostressors lead to technostrain.},
+  title = {{DECONSTRUCTING} {TECHNOSTRESS}: {A} {CONFIGURATIONAL} {APPROACH} {TO} {EXPLAINING} {JOB} {BURNOUT} {AND} {JOB} {PERFORMANCE1}},
+  journal = {MIS Quarterly Management Information Systems},
+  year = {2024},
+  doi = {10.25300/MISQ/2023/16978},
+  volume = {48},
+  pages = {679--698},
+}
+
+@article{lee_beyond_2024,
+  author = {Lee, Margaret Y.W. and Riach, Kathleen},
+  abstract = {This paper attends to the burnout recovery experiences of women in science, technology, engineering, and mathematics (STEM) and qualitatively explores how these individuals renegotiate, reorient, and recalibrate their work trajectories after burnout; an ambiguous and shocking event that has been shown to cause lingering disruption for both individuals and organizations (Salvagioni et al., 2017). We bring together conservation of resources (COR) theory and a sensemaking approach, illustrating how attention to sensemaking reveals the dynamics of resource allocation during times of disruption and loss; that is, the relational negotiation of protecting, investing, and fostering resources, including and importantly to burnout, a recognizable sense of recovery. Our rich qualitative analysis and findings reveal three sensemaking plotlines (Combative, Regenerative, and Promissory) through which rituals of resource management take place. Insights from this study provide a theoretical exposition for the post-burnout experience, illuminating the black box between burnout and recovery. We present a number of theoretical and practical contributions in developing the scholarly vistas surrounding (post-)burnout studies and STEM careers that better conceptualize (i) how marginalized members in highly instituted settings experience the aftermath of burnout and (ii) the broader implications this has for the sustainability of workforces.},
+  title = {{Beyond} {The} {Brink}: {STEM} {Women} {and} {Resourceful} {Sensemaking} {After} {Burnout}},
+  journal = {Journal of Organizational Behavior},
+  year = {2024},
+  doi = {10.1002/job.2744},
+  volume = {45},
+  pages = {477--496},
+}
+
+@article{yuan_managing_2025,
+  author = {Yuan, Yuting},
+  abstract = {Problem definition: We study innovative capacity-planning strategies for service systems that encounter significant challenges in maintaining service quality because of worker shortages, a prevalent and growing issue across healthcare, retail, customer service, and other labor-intensive sectors. Methodology/results: Using a stylized queueing model representing a centralized service system, we propose a multistage staffing strategy utilizing capacities of various flexibility. Accounting for demand uncertainty and limited worker supply, our model prescribes dynamic staffing decisions, including long-term base staffing, short-term agency staffing, and the allocation of agency staffing in real time. We establish the convexity of the exact cost functions under a reasonable assumption of customer patience. To gain further insights, we characterize approximate solutions under stochastic fluid approximation. We then leverage these approximate solutions to quantify the benefits of flexible capacity in mitigating worker shortages, specifically by analyzing server utilization and cost reduction. A case study using hospital data validates the effectiveness of our staffing solutions; the annual cost reduction can reach at least half a million dollars by switching from independent agency staffing to pooled agency staffing if their unit staffing costs are comparable. Managerial implications: Our study demonstrates that incorporating flexible capacity alleviates heavy utilization of long-term capacity, preventing worker burnout in understaffed systems and ultimately improving the quality of service in the long run. In addition, employing flexible capacity effectively reduces system cost—a combination of staffing and delay costs that reflects the severity of shortages. In terms of cost reduction, a pooling strategy proves to be particularly advantageous when the demands of service units are volatile and countermonotonic. Interestingly, because pooling induces high server utilization (which likely further reduces congestion), a pooling strategy may recommend a higher total capacity than an independent staffing strategy, contrary to the common wisdom that pooling reduces resource requirements.},
+  title = {{Managing} {Flexible} {Capacity} {in} {Service} {Systems} {with} {Worker} {Shortages}},
+  journal = {Manufacturing and Service Operations Management},
+  year = {2025},
+  doi = {10.1287/msom.2022.0271},
+  volume = {27},
+  pages = {808--824},
+}
+
+@article{ilies_emotional_2020,
+  author = {Ilies, Remus and Ju, Huirong and Liu, Yukun and Goh, Zen},
+  abstract = {Work-family research predominantly focused on role incompatibilities with theorizing often rooted in resource depletion mechanisms derived from Conservation of Resources (COR) theory. However, researchers have largely neglected resource accumulation processes also part of COR, due to the lack of appropriate conceptualization and operationalization of resource possession. To address this deficiency, we propose that emotional resource accumulation, as a COR mechanism, is distinct from emotional resource depletion in explaining work-family linkages; to enable empirical tests of this mechanism, we develop the Emotional Resource Possession Scale (ERPS), at both state and trait levels. We describe four studies demonstrating that the ERPS has discriminant validity against emotional exhaustion and emotional energy, and differential relationships with positive and negative affect. Our results show that resource-generating (work engagement and co-worker support) and resource-depleting (quantitative job demands and emotional labour) constructs have differential associations with the ERPS (and also with emotional exhaustion). Finally, our findings show that the ERPS has incremental validity, over and above emotional exhaustion, in predicting family performance and life satisfaction. We conclude with a discussion of the implications of considering resource depletion and accumulation as distinct processes, and assessing them as such, for theory on work and family and on employee well-being.},
+  title = {{Emotional} {Resources} {Link} {Work} {Demands} {and} {Experiences} {to} {Family} {Functioning} {and} {Employee} {Well-being}: {The} {Emotional} {Resource} {Possession} {Scale} {(ERPS})},
+  journal = {European Journal of Work and Organizational Psychology},
+  year = {2020},
+  doi = {10.1080/1359432X.2020.1718655},
+  volume = {29},
+  pages = {434--449},
+}
+
+@article{mandal_tactical_2025,
+  author = {Mandal, Minakshi Punam and Santini, Alberto and Archetti, Claudia},
+  abstract = {We tackle the problems of workforce sizing and shift scheduling of a logistic operator delivering parcels in the last-mile segment of the supply chain. Our working hypothesis is that the relevant decisions are affected by two main trade-offs: workforce size and shift stability. A large workforce can deal with demand fluctuations but incurs higher fixed costs; by contrast, a small workforce might require excessive outsourcing to third-party logistic providers. Stable shifts, i.e., with predictable start times and lengths, improve worker satisfaction and reduce turnover; at the same time, they might be less able to adapt to an unsteady demand. We test these assumptions through an extensive computational campaign based on a novel mathematical formulation. We find that extreme shift stability is, indeed, unsuitable for last-mile operations. At the same time, introducing a very limited amount of flexibility achieves similar effects as moving to a completely flexible system while ensuring a better work-life balance for the workers. Several recent studies in the social sciences have warned about the consequences of precarious working conditions for couriers and retail workers and have recommended — among other things — stable work schedules. Our work shows that it is possible to offer better working conditions in terms of shift stability without sacrificing the company's bottom line. Thus, companies prioritising profitability (as is often the case) can improve workers’ well-being and increase retention with a negligible cost impact.},
+  title = {{Tactical} {Workforce} {Sizing} {and} {Scheduling} {Decisions} {for} {Last-mile} {Delivery}},
+  journal = {European Journal of Operational Research},
+  year = {2025},
+  doi = {10.1016/j.ejor.2024.12.006},
+  volume = {323},
+  pages = {153--169},
+}
+
+@article{yoo_critical_2022,
+  author = {Yoo, Hye Jin and Lee, Hyeongsuk},
+  abstract = {Aim: To examine the need for information and communication technology (ICT)-based nursing care in improving patient management during the pandemic. Background: Maintaining traditional approaches to nursing in the ongoing coronavirus disease (COVID-19) pandemic predisposes health care systems to a risk of diminished quality of care. Using ICT (real-time videoconferencing, mobile robots and artificial intelligence) could reduce burnout and infection risks by minimizing face-to-face contact. Method: Qualitative descriptive design with content analysis. Results: Overall, 24 participants (14 nurses, six medical/nursing informatics experts and four technology experts) were interviewed. Three main themes were extracted: emerging challenges for nurses due to COVID-19, impact of new technology on patient and nurse experiences and concerns with implementation of technology. Conclusion: A significant portion of nurses' work was unrelated to professional nursing, causing burnout. ICT could help reduce nurses' burden by facilitating environmental management and non-contact communication and providing emotional support for patients. Implications for Nursing Management: Establishing an ICT-based nursing care system that considers the physical environment and communication infrastructure of health care institutions, user's digital health literacy and user safety to effectively manage non-nursing care-related activities and undertake tasks that can be delegated may improve the quality of care for quarantined patients and reduce risk of cross-infection.},
+  title = {{Critical} {Role} {of} {Information} {and} {Communication} {Technology} {in} {Nursing} {During} {The} {COVID-19} {Pandemic}: {A} {Qualitative} {Study}},
+  journal = {Journal of Nursing Management},
+  year = {2022},
+  doi = {10.1111/jonm.13880},
+  volume = {30},
+  pages = {3677--3685},
+}
+
+@article{angelici_smart_2024,
+  author = {Angelici, Marta and Profeta, Paola},
+  abstract = {Does removing constraints on the time and place of work benefit the utility of workers and firms? We design a randomized experiment of a sample of workers in a large Italian company; workers are randomly divided into a treated group that engages in flexible place and time of work (which we call "smart working") one day per week for nine months and a control group that continues to work traditionally. By comparing the treated and control groups, we find causal evidence that the flexibility of smart working increases the productivity of workers. We estimate a decrease of one day of leave on average per month, and we exclude a significant decline in objective productivity in any month. We also find sizeable improvements in well-being and work-life balance, and we observe that men also increase the time dedicated to household and care activities.},
+  title = {{Smart} {Working}: {Work} {Flexibility} {Without} {Constraints}},
+  journal = {Management Science},
+  year = {2024},
+  doi = {10.1287/mnsc.2023.4767},
+  volume = {70},
+  pages = {1680--1705},
+}
+
+@article{ma_impact_2021,
+  author = {Ma, Jichang and Ollier-Malaterre, Ariane and Lu, Chang qin},
+  abstract = {Techno-stressors stemming from the use of information technology (IT) have become a major source of stress in the modern workplace. While research shows that techno-stressors negatively affect employees' work attitudes and performance, little is known about their effects on employees' non-work lives. This research investigates the impact of techno-stressors on work-life balance and examines job self-efficacy as a buffer of this negative impact via the attenuating effect of emotional exhaustion. We conducted two survey studies. Study 1 collected data through a paper-and-pencil survey from 316 IT workers in a northern China IT company. Study 2 replicated and strengthened Study 1 by collecting longitudinal data through an online survey platform from 646 southern China female workers across diverse occupations. The results showed that techno-stressors negatively affected work-life balance, but job self-efficacy buffered employees from this negative effect by reducing their emotional exhaustion. Our findings extend understanding of techno-stressors’ effects on individuals’ non-work domains and shed light on how to cope with techno-stressors.},
+  title = {{The} {Impact} {of} {Techno-stressors} {On} {Work–life} {Balance}: {The} {Moderation} {of} {Job} {Self-efficacy} {and} {The} {Mediation} {of} {Emotional} {Exhaustion}},
+  journal = {Computers in Human Behavior},
+  year = {2021},
+  doi = {10.1016/j.chb.2021.106811},
+  volume = {122},
+}
+
+@article{acuna_two_2024,
+  author = {Acuna, Jorge A. and Cantarino, Daniela and Martinez, Rodrigo and Zayas-Castro, José L.},
+  abstract = {Waiting for elective procedures has become a major health concern in both rich and poor countries. The inadequate balance between the demand for and the supply of health services negatively affects the quality of life, mortality, and government appraisal. This study presents the first mathematical framework shedding light on how much, when, and where to invest in health capacity to end waiting lists for elective surgeries. We model the healthcare system as a two-stage stochastic capacity expansion problem where government investment decisions are represented as a non-symmetric Nash bargaining solution. In particular, the model assesses the capacity requirements, optimal allocation, and corresponding financial investment per hospital, region, specialty, and year. We use the proposed approach to target Chile's elective surgical waiting lists (2021–2031), considering patients’ priorities, 10 regional health services, 24 hospitals, and 10 surgical specialties. We generate uncertain future demand scenarios using historical data (2012–2021) and 100 autoregressive integrated moving average prediction models. The results indicate that USD 3,331.677 million is necessary to end the waiting lists by 2031 and that the Nash approach provides a fair resource distribution with a 6% efficiency loss. Additionally, a smaller budget (USD 2,000 million) was identified as necessary to end the waiting lists in a longer planning horizon. Further analysis revealed the impact of investment in patient transfer and a decline in investment yield.},
+  title = {{A} {Two-stage} {Stochastic} {Game} {Model} {for} {Elective} {Surgical} {Capacity} {Planning} {and} {Investment}},
+  journal = {Socio Economic Planning Sciences},
+  year = {2024},
+  doi = {10.1016/j.seps.2023.101786},
+  volume = {91},
+}
+
+@article{harrop_meta_2025,
+  author = {Harrop, Niamh and Jiang, Lixin and Overall, Nickola},
+  abstract = {Flexible working arrangements (FWAs) are increasingly available and used across diverse settings, particularly following the COVID-19 pandemic. Yet, knowledge of the antecedents and outcomes of FWAs is incomplete and inconclusive. It remains unclear what factors facilitate the perceived availability and use of FWAs, and under what conditions FWAs are most beneficial, including (1) whether flexibility in work schedule (flextime), work location (flexplace) or both (flextime + place) is most beneficial, and (2) whether employees must use FWAs to reap their benefits. To address these gaps, we conduct a comprehensive meta-analysis to examine theoretically derived antecedents and outcomes of FWAs. We also examine whether different types of FWAs—flextime versus flexplace versus flextime + place, and FWA availability versus FWA use—moderate the relationships between FWAs and outcomes. Meta-analytic results based on 113 studies with 88 618 participants identify a host of important antecedences of FWAs, such as managerial status, self-efficacy, and task interdependency. Consistent with social exchange theory, Conservation of Resources theory and boundary theory, FWAs were significantly associated with beneficial outcomes, such as greater job satisfaction, organisational commitment, job autonomy, life satisfaction, better work-family interface and family satisfaction. Significant moderation indicate that more beneficial employee outcomes were associated with (1) having both flextime and flexplace compared to flextime or flexplace alone, (2) flextime compared to flexplace and (3) the availability compared to use of FWAs. These results provide a comprehensive, systematic understanding of the personal, work-related, and familial antecedents and outcomes associated with different types of FWAs.},
+  title = {{A} {Meta-analysis} {of} {Antecedents} {and} {Outcomes} {of} {Flexible} {Working} {Arrangements}},
+  journal = {Journal of Organizational Behavior},
+  year = {2025},
+  doi = {10.1002/job.2896},
+}
